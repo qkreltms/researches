@@ -151,10 +151,15 @@ https://github.com/rt2zz/redux-persist/blob/master/src/persistReducer.js#L126
   }
   ```
   
-  _pStpre은 persistStore()함수를 호출할때 같이 생성된 별도의 store입니다. 이 store의 역할은 persistReducer가 래핑된 모든 reducer가 REHYDRATE 액션이 호출됐는지 확인 후 PersistGate에 loading이 완료(bootstrapped)됐다는 것을 알려줍니다.
+  _pStpre은 persistStore()함수를 호출할때 createStore()함수 호출로 같이 생성된 별도의 store입니다. 이 store의 역할은 persistReducer가 래핑된 모든 reducer가 REHYDRATE 액션이 호출됐는지 확인 후 PersistGate에 loading이 완료(bootstrapped)됐다는 것을 알려줍니다.
+  
   
  https://github.com/rt2zz/redux-persist/blob/master/src/integration/react.js#L64
  ```
+   // 
+    let { bootstrapped } = persistor.getState()
+    //...
+    
    return this.state.bootstrapped ? this.props.children : this.props.loading
   ```
 
