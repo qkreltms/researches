@@ -2,55 +2,59 @@
 ## Redux Persist란 무엇인가?
 흔히 여러 컴포넌트를 거치지 않고 손쉽게 state를 전달하기 위해 혹은 분리해서 중앙화 하기 위해 Redux를 사용합니다.
 하지만 이 state는 인터넷창의 새로고침 버튼을 누르거나 종료하는 순간 초기화 되고 맙니다. 
-초기화를 방지하기 위해서 흔히 Web storage(이하 storage라 지칭)에 저장하는데요. 이 것과 삭제 기능을 포함해서 Redux안에서 간편하게 하게 할 수 있는 라이브러리가 
-바로 Redux Persist입니다. 실제로 코드를 살펴보면 Redux store을 하나 더 만들어서 여기에 특정 state를 저장하고 특정 액션이 발동되면
-직렬화(serialize)해서 storage에 저장, storage에서 역직렬화(deserialize)후 불러와 사용합니다.
+초기화를 방지하기 위해서 흔히 Web storage(이하 storage라 지칭)에 저장하는데요. 간편하게 redux-persist reducer과 특정 reducer를 결합해주면 특정 reducer에서 액션이 발동되면 stroage에 저장해주는 라이브러리가 바로 Redux-persist 입니다.
 
 ## 사용법:
-1.먼저 기존의 Reducer에 [persistConfig](https://github.com/rt2zz/redux-persist/blob/master/src/types.js#L13-L30)를 만들고 persistReducer함수로 감싼다.
+1.먼저 persistReducer에 config값을 넣어주고 두 번째 인자로 Reducer를 넣어줍니다.
+그렇게 하면 이미 존재하는 액션 외에 다른 액션 PERSIST, PURGE, FLUSH, PAUSE, REHYDRATE 을 추가적으로 탐지해서 기능을 수행이 가능합니다.
 
 src/stores/rootReducer.ts
 
 ```ts
-import { persistReducer, PersistConfig } from "redux-persist";
-import storage from "redux-persist/lib/storage";
-
-export interface CombineReducers {
-  authReducer: AuthState;
-  appCoreReducer: IAppCoreState;
-  selectedDataReducer:  SelectedDataState;
-  workListPageReducer: WorkListPageState;
-  PatientDataReducer: PatientDataStoreState;
-  StudyDataReducer: StudyDataStoreState;
-  AssessmentDataReducer: AssessmentDataStoreState;
-  AnalysisDataReducer: PersistPartial & AnalysisDataStoreState;
-}
-
-const analysisDataPersistConfig: PersistConfig<AnalysisDataStoreState> = {
-  key: "analysisData",
-  storage
-}
-
-export const rootReducer: Reducer<CombineReducers, AnyAction> = combineReducers<CombineReducers>({
-  authReducer,
-  appCoreReducer,
-  selectedDataReducer,
-  workListPageReducer,
-  PatientDataReducer,
-  StudyDataReducer,
-  AssessmentDataReducer,
   AnalysisDataReducer: persistReducer(analysisDataPersistConfig, AnalysisDataReducer)
-});
+```
+실제 코드를 보면 어떤 기능을 수행 후 return 값으로 인자로 전달 받은 reducer을 그대로 반환하는것을 볼 수 있습니다.
+```ts
+export default function persistReducer<State: Object, Action: Object>(
+  config: PersistConfig,
+  baseReducer: (State, Action) => State
+): (State, Action) => State & PersistPartial {
+//...
+  return (state: State, action: Action) => {
+    //...
+    if (action.type === PERSIST) {
+      return {
+        ...baseReducer(restState, action),
+        _persist: { version, rehydrated: false },
+      }
+    } else if (action.type === PURGE) {
+      //...
+      return {
+        ...baseReducer(restState, action),
+        _persist,
+      }
+    } else if (action.type === FLUSH) {
+      //...
+      return {
+        ...baseReducer(restState, action),
+        _persist,
+      }
+    } else if (action.type === PAUSE) {
+      //...
+    } else if (action.type === REHYDRATE) {
+    //...
+    }
+
 ```
 
-2.persistStore함수의 반환값(persistor)을 
+2. store 객체 값을 persistStore의 인자로 넘겨줍니다.
 
 src/stores/Index.ts
 ```ts
-const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk)));
-export default store;
 export const persistor = persistStore(store);
 ```
+
+
 
 3.```<PersistGate/>```에 인자로 넘겨준다.
 
@@ -66,9 +70,95 @@ ReactDOM.render(
 );
 ```
 
-Redux dev tool 을 확인해보면 "PERSIST" 액션이 먼저 호출된 후 각 persisReducer에 연결된 reducer 마다 "REHYDRATE" 액션이 호출되면서 storage에 저장된 것을 확인할 수 있다.
+Redux dev tool 을 확인해보면 "PERSIST" 액션이 먼저 호출된 후 각 persisReducer에 연결된 reducer 마다 "REHYDRATE" 액션이 호출되면서 storage에 저장된 것을 확인할 수 있는데요. 여기서 PERSIST액션을 호출한 적이 없는데 도대체 어디서 해주는 걸까요? 바로 persistStore입니다. 코드를 보면 여기서 action을 호출해 주는것을 확인할 수 있습니다.
+https://github.com/rt2zz/redux-persist/blob/master/src/persistStore.js#L126
+```ts
+  if (!(options && options.manualPersist)){
+    persistor.persist()
+  }
+```
 
-저장이 발생하는 로직을 간단히 보면 단순히 먼저 store에서 getItem을 통해 값을 가져오고 "REHYDRATE" 액션이 호출될 때 setItem을 통해 저장하는 것 뿐이다.
+그럼이제 persist 액션이 호출되면 어떤 일이 일어나는지 살펴볼까요?
+먼저 persistor오브젝트를 보겠습니다.
+```
+ let persistor: Persistor = {
+    ..._pStore,
+    purge: () => {
+      let results = []
+      store.dispatch({
+        type: PURGE,
+        result: purgeResult => {
+          results.push(purgeResult)
+        },
+      })
+      return Promise.all(results)
+    },
+    flush: () => {
+      let results = []
+      store.dispatch({
+        type: FLUSH,
+        result: flushResult => {
+          results.push(flushResult)
+        },
+      })
+      return Promise.all(results)
+    },
+    pause: () => {
+      store.dispatch({
+        type: PAUSE,
+      })
+    },
+    persist: () => {
+      store.dispatch({ type: PERSIST, register, rehydrate })
+    },
+  }
+
+```
+persist액션이 호출되면 먼저 register 함수가 호출되면서 REGISTER 액션이 호출됩니다. 
+```
+https://github.com/rt2zz/redux-persist/blob/master/src/persistReducer.js#L126
+      action.register(config.key)
+```
+그 다음 실제로 storage에 저장하는 과정이 이뤄집니다.
+https://github.com/rt2zz/redux-persist/blob/master/src/persistReducer.js#L126
+```
+ getStoredState(config).then(
+        restoredState => {
+          const migrate = config.migrate || ((s, v) => Promise.resolve(s))
+          migrate(restoredState, version).then(
+            migratedState => {
+              _rehydrate(migratedState)
+            },
+            migrateErr => {
+              if (process.env.NODE_ENV !== 'production' && migrateErr)
+                console.error('redux-persist: migration error', migrateErr)
+              _rehydrate(undefined, migrateErr)
+            }
+          )
+        },
+        err => {
+          _rehydrate(undefined, err)
+        }
+      )
+      
+      ```
+```
+  let register = (key: string) => {
+    _pStore.dispatch({
+      type: REGISTER,
+      key,
+    })
+  }
+  ```
+  
+  _pStpre은 persistStore()함수를 호출할때 같이 생성된 별도의 store입니다. 이 store의 역할은 persistReducer가 래핑된 모든 reducer가 REHYDRATE 액션이 호출됐는지 확인 후 PersistGate에 loading이 완료(bootstrapped)됐다는 것을 알려줍니다.
+  
+ https://github.com/rt2zz/redux-persist/blob/master/src/integration/react.js#L64
+ ```
+   return this.state.bootstrapped ? this.props.children : this.props.loading
+  ```
+
+저장이 발생하는 로직을 간단히 보면 단순히 먼저 store에서 getItem을 통해 값을 가져오고 "REHYDRATE" 액션이 호출될 때 setItem을 통해 저장하는 것 뿐입니다.
 
 ```js
    //redux-persist/src/createPersistoid.js
