@@ -13,5 +13,6 @@ This is my personal researches of something what I interasted in.
 1. Flux
 1. React
 1. CI/CD tools
+1. Storybook.js
 
 ## Dones
