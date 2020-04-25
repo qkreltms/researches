@@ -1,27 +1,51 @@
 # Redux Persist를 소개합니다.
-## Redux Persist란 무엇인가?
-흔히 여러 컴포넌트를 거치지 않고 손쉽게 state를 전달하기 위해 혹은 분리해서 중앙화 하기 위해 Redux를 사용합니다.
-하지만 이 state는 인터넷창의 새로고침 버튼을 누르거나 종료하는 순간 초기화 되고 맙니다. 
-초기화를 방지하기 위해서 흔히 Web storage(이하 storage라 지칭)에 저장하는데요. 간편하게 redux-persist reducer과 특정 reducer를 결합해주면 특정 reducer에서 액션이 발동되면 stroage에 저장해주는 라이브러리가 바로 Redux-persist 입니다.
+Reducer의 State값을 Web storage(이하 Storage라 지칭)에 저장합니다.
 
-## 사용법:
-1.먼저 persistReducer에 config값을 넣어주고 두 번째 인자로 Reducer를 넣어줍니다.
-그렇게 하면 이미 존재하는 액션 외에 다른 액션 PERSIST, PURGE, FLUSH, PAUSE, REHYDRATE 을 추가적으로 탐지해서 기능을 수행이 가능합니다.
+흔히 여러 컴포넌트를 거치지 않고 손쉽게 State를 전달하기 위해 혹은 분리해서 중앙화 하기 위해 Redux를 사용합니다.
+하지만 Redux에 저장된 데이터는 새로고침 버튼을 누르거나 종료하는 순간 날아가 버리고 맙니다. 
+날아가는 것을 방지하기 위해서 흔히 데이터를 Storage에 저장하는데요. 
+Redux Persist의 Reducer를 특정 Reducer와 결합해주기만 하면 이 Reducer에 액션이 발동될 때마다 적절히 Stroage에 데이터를 저장해주는 라이브러리입니다.
 
-src/stores/rootReducer.ts
+## 딥하게 알아보기
+아래의 3가지로 항목을 나눠 진행하겠습니다.
+1. Redux persist가 입혀진 timer예제에서 어떤 과정으로 실행되는지 알아본 후
+2. 기본적인 timer예제에 Redux persist를 입히는 방법을 알아보겠습니다.
+(독자분들은 어느정도 React.js를 안다고 가정하고 timer 예제는 따로 설명치 않겠습니다.)
+3. Redux persist의 다른 기능에 대해서 알아보겠습니다.
+---
+먼저 Redux persist가 입혀진 timer예제를 보겠습니다.
+이 예제를 실행하고 어떤 과정이 이뤄지는지 보면 먼저
+1. 로딩이 나타납니다.
+2. ```persistReducer```가 감싸진 각각의 Reducer들은 REHYDRATE 액션이 호출됩니다. (Redux dev console창에서 확인 할 수 있습니다.)
+3. console 창에서 Application > Storage > Local Storage 항목을 확인하면 각 Reducer의 State 값이 저장된 것을 확인할 수 있습니다. 
+
+위의 결과를 토대로 궁금한 사항을 나눠봤습니다.
+
+### Q) 1. 로딩이 어떻게 나타나나요?
+
+### Q) 2. REHYDRATE 액션은 어디서 호출하나요? 
+### Q) 3. persisReducer는 어떻게 다른 액션을 붙여주나요?
+### Q) 4. 어떻게 저장이 되나요?
+
+```persistReducer```에 config값을 넣어주고 두 번째 인자로 Reducer를 넣어줍니다.
+이 Reducer에는 이미 존재하는 액션 외에 다른 액션: PERSIST, PURGE, FLUSH, PAUSE, REHYDRATE을 추가적으로 탐지해 특정 기능을 수행 후 저장하는 기능을 붙여줍니다.
 
 ```ts
-  AnalysisDataReducer: persistReducer(analysisDataPersistConfig, AnalysisDataReducer)
 ```
-실제 코드를 보면 어떤 기능을 수행 후 return 값으로 인자로 전달 받은 reducer을 그대로 반환하는것을 볼 수 있습니다.
+
+
 ```ts
+// 아래는 persistReducer 코드의 일부분입니다.
 export default function persistReducer<State: Object, Action: Object>(
-  config: PersistConfig,
-  baseReducer: (State, Action) => State
+  config: PersistConfig, // 첫 번째 인자는 config
+  baseReducer: (State, Action) => State // 두 번째인자는 Reducer입니다.
 ): (State, Action) => State & PersistPartial {
 //...
   return (state: State, action: Action) => {
     //...
+    
+    // 여기서 어떤 액션이 오면 PERSIST 액션을 탐지 후 기능을 수행하고 두 번째 인자로 들어온 Reducer를 반환합니다.
+    // 나머지 액션도 비슷합니다.
     if (action.type === PERSIST) {
       return {
         ...baseReducer(restState, action),
@@ -44,9 +68,8 @@ export default function persistReducer<State: Object, Action: Object>(
     } else if (action.type === REHYDRATE) {
     //...
     }
-
 ```
-
+이제 
 2. store 객체 값을 persistStore의 인자로 넘겨줍니다.
 
 src/stores/Index.ts
