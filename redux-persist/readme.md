@@ -11,7 +11,7 @@ Redux Persist의 ```persistReducer```를 Reducer를 특정 Reducer와 결합해�
 ---
 ## 목차
 아래의 3가지로 항목을 나눠 진행하겠습니다.
-1. counter예제에 Redux Persist를 입히는 방법 
+1. Counter 예제에 Redux Persist 입히기 
        
    (독자분들은 어느정도 React.js를 안다고 가정하고 예제는 따로 설명치 않겠습니다.)
 
@@ -23,25 +23,82 @@ Redux Persist의 ```persistReducer```를 Reducer를 특정 Reducer와 결합해�
    
    Redux Persist에서 제공하는 여러 기능에 대해서 알아보겠습니다.
 ---
-먼저 Redux persist가 입혀진 timer예제를 보겠습니다.
-이 예제를 실행하고 어떤 과정이 이뤄지는지 보면 먼저
-1. 로딩이 나타납니다.
-2. ```persistReducer```가 감싸진 각각의 Reducer들은 REHYDRATE 액션이 호출됩니다. (Redux dev console창에서 확인 할 수 있습니다.)
+## 1. Counter 예제에 Redux Persist 입히기
+Counter 예제:
+
+[![Edit counter](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/counter-mdlqq?fontsize=14&hidenavigation=1&theme=dark)
+
+
+counterPersistConfig를 만들어서 persistReducer의 첫 번째 인자로 넣어줍니다.
+
+이미 구현된 counterReducer를 persistReducer의 두 번째 인자로 넣어줍니다.
+
+
+index.js
+```js
+const counterPersistConfig = {
+  key: "counter",
+  storage: storage
+};
+
+const rootReducer = combineReducers({
+  counterReducer: persistReducer(counterPersistConfig, counterReducer)
+});
+```
+
+Persist Store을 생성해줍니다.
+```js
+const store = createStore(rootReducer);
+const persistor = persistStore(store);
+```
+
+Provider를 연결해줍니다.
+```js
+ReactDOM.render(
+  <Provider store={store}>
+    <PersistGate loading={<Loading />} persistor={persistor}>
+      <App />
+    </PersistGate>
+  </Provider>,
+  document.getElementById("root")
+```
+완료했습니다! 간단하죠?
+
+이제 새로고침해도 초기화 되지 않는것을 확인할 수 있습니다. 
+
+![vv](./1.gif);
+
+완성본: 
+
+[![Edit redux-persist-counter](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/redux-persist-counter-wdqle?fontsize=14&hidenavigation=1&theme=dark)
+
+우리가 해야할 것을 정리하면 이렇습니다.
+1. 원하는 Reducer에 ```persistReducer``` 감싸주기
+2. Persist Store 만들기
+3. Persist Provider 연결하기
+
+---
+## 2. Deep 하게 알아보기
+
+어떻게 Redux Persist를 사용하는지 대략 알았으니 이제는 코드를 살펴보면서 Deep 하게 알아보겠습니다.
+
+다시한번 Counter 예제를 보고 어떤 일이 일어나는지 보겠습니다.
+
+
+1. 콘솔 창에 ```loading...```이 나타납니다.
+2. Redux dev console 창을 확인하면 ```persistReducer```가 감싸진 각각의 Reducer들은 REHYDRATE 액션이 호출됩니다.
 3. console 창에서 Application > Storage > Local Storage 항목을 확인하면 각 Reducer의 State 값이 저장된 것을 확인할 수 있습니다. 
 
 위의 결과를 토대로 궁금한 사항을 나눠봤습니다.
 
-### Q) 1. 로딩이 어떻게 나타나나요?
+### Q) 1. 로딩을 왜/어떻게 구현했나요?
 
-### Q) 2. REHYDRATE 액션은 어디서 호출하나요? 
-### Q) 3. persisReducer는 어떻게 다른 액션을 붙여주나요?
+### Q) 2. REHYDRATE 액션을 호출한 적이 없는데 어디서 호출하나요? 
+### Q) 3. ```persisReducer```는 어떻게 다른 액션을 탐지해서 기능을 수행하나요?
 ### Q) 4. 어떻게 저장이 되나요?
 
 ```persistReducer```에 config값을 넣어주고 두 번째 인자로 Reducer를 넣어줍니다.
 이 Reducer에는 이미 존재하는 액션 외에 다른 액션: PERSIST, PURGE, FLUSH, PAUSE, REHYDRATE을 추가적으로 탐지해 특정 기능을 수행 후 저장하는 기능을 붙여줍니다.
-
-```ts
-```
 
 
 ```ts
