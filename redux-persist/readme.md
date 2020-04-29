@@ -35,6 +35,7 @@ counterPersistConfig를 만들어서 persistReducer의 첫 번째 인자로 넣�
 
 
 index.js
+---
 ```js
 const counterPersistConfig = {
   key: "counter",
