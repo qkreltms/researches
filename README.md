@@ -1,19 +1,17 @@
 # Resaerches
 This is my personal researches of something what I interasted in.
 ## DOINGs:
-1. redux-persist
-1. Stackoverflow Answers
-
+1. Redux-persist.js
+2. 
 ## TODOs:
-1. BDD
-1. TDD
-1. cypress
-1. Rx.js
-1. Design patterns
-1. Flux
-1. React in detail
-1. CI/CD tools
-1. Storybook.js
+1. TDD And BDD
+2. JS Design patterns
+3. Flux
+4. React (deeper structure)
+5. CI/CD tools
+6. Docker
+7. Storybook.js
+8. Tensorflow.js
 
 ## DONEs
 Test library/framework
