@@ -90,10 +90,9 @@ ReactDOM.render(
 2. Redux dev console 창을 확인하면 ```persistReducer```가 감싸진 각각의 Reducer들은 REHYDRATE 액션이 호출됩니다.
 3. console 창에서 Application > Storage > Local Storage 항목을 확인하면 각 Reducer의 State 값이 저장된 것을 확인할 수 있습니다. 
 
-위의 결과를 토대로 궁금한 사항을 나눠봤습니다.
+위의 결과를 토대로 궁금한 사항을 나누고 답변하는 형식으로 진행하겠습니다.
 
 ### Q) 1. 로딩을 왜/어떻게 구현했나요?
-
 ### Q) 2. REHYDRATE 액션을 호출한 적이 없는데 어디서 호출하나요? 
 ### Q) 3. ```persisReducer```는 어떻게 다른 액션을 탐지해서 기능을 수행하나요?
 ### Q) 4. 어떻게 저장이 되나요?
