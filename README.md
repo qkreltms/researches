@@ -15,5 +15,5 @@ This is my personal researches of something what I interasted in.
 1. CI/CD tools
 1. Storybook.js
 
-## Dones
+## DONEs
 Test library/framework
