@@ -8,7 +8,7 @@
 
 Redux Persist의 ```persistReducer```를 Reducer를 특정 Reducer와 결합해주기만 하면 rehydrate(재수화)라는 과정을 거친후 이 Reducer에 액션이 Dispatch 때마다 적절히 Stroage에 데이터를 저장/관리해줍니다. 여기서 말하는 재수화는 storage에 저장된 데이터를 가져오는 과정을 말합니다.
 
-Redux Persist는 어떤 면에서는 미들웨어와 비슷한 역할을 합니다. Reducer의 State값을 Javascript Web Storage API를 통해 get/set을 하기 전 Reducer의 특정 State만 저장을 하게 할 수도 있고 암호/복호화를 할 수 도있으니까요. 참고로 Storage에서 delete를 하지 않습니다. 그 대신 State Reconsiler라는 기능을 제공해 오브젝트 병합을 어떻게 할지 결정할 수 있죠. 
+Redux Persist는 어떤 면에서는 미들웨어와 비슷한 역할을 합니다. Reducer의 State값을 Javascript Web Storage API를 통해 get/set을 하기 전 Reducer의 특정 State만 저장을 하게 할 수도 있고 암호/복호화를 할 수 도있으니까요. 참고로 delete를 하지 않습니다. 그 대신 State Reconsiler라는 기능을 제공해 기존에 Storage에 저장된 오브젝트와 Incoming 오브젝트가 어떻게 병합 할지 결정할 수 있죠. 
 
 ---
 ## 목차
