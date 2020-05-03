@@ -6,9 +6,11 @@
 하지만 Redux에 저장된 데이터는 새로고침 버튼을 누르거나 종료하는 순간 날아가 버리고 맙니다. 
 날아가는 것을 방지하기 위해서 흔히 데이터를 Storage에 저장하는데요. 
 
-Redux Persist의 ```persistReducer```를 Reducer를 특정 Reducer와 결합해주기만 하면 rehydrate(재수화)라는 과정을 거친후 이 Reducer에 액션이 Dispatch 때마다 적절히 Stroage에 데이터를 저장/관리해줍니다. 여기서 말하는 재수화는 storage에 저장된 데이터를 가져오는 과정을 말합니다.
+Redux Persist의 ```persistReducer```를 Reducer를 특정 Reducer와 결합해주기만 하면 Rehydrate(재수화)라는 과정을 거친후 이 Reducer에 액션이 Dispatch 때마다 적절히 Stroage에 데이터를 저장/관리해줍니다. 여기서 말하는 재수화는 Storage에 저장된 데이터를 가져오는 과정을 말합니다.
 
-Redux Persist는 어떤 면에서는 미들웨어와 비슷한 역할을 합니다. Reducer의 State값을 Javascript Web Storage API를 통해 get/set을 하기 전 Reducer의 특정 State만 저장을 하게 할 수도 있고 암호/복호화를 할 수 도있으니까요. 참고로 delete를 하지 않습니다. 그 대신 State Reconsiler라는 기능을 제공해 기존에 Storage에 저장된 오브젝트와 Incoming 오브젝트가 어떻게 병합 할지 결정할 수 있죠. 
+Redux Persist는 어떤 면에서는 미들웨어와 비슷한 역할을 합니다.
+
+ Reducer의 State값을 Javascript Web Storage API를 통해 get/set을 하기 전 Reducer의 특정 State만 저장을 하게 할 수 있고 암호/복호화를 할 수 도 있으니까요. 참고로 이후에 설명드릴 PURGE 액션을 호출할 때를 제외하고 delete를 하지 않습니다. 그 대신 State Reconsiler라는 기능을 제공해 기존에 Storage에 저장된 오브젝트와 Incoming 오브젝트가 어떻게 병합 할지 결정할 수 있죠. 
 
 ---
 ## 목차
@@ -99,7 +101,7 @@ ReactDOM.render(
 
 ### Q) 1. ```<PersistGate/>```의 역할은 무엇인가요?
  
-먼저 ```<PersistGate/>```의 bootstraped 라는 state 변수의 초기값이 false 이므로 props로 전달받은 Loading 컴포넌트를 보여줍니다. 
+```<PersistGate/>```의 bootstraped 라는 state 변수의 초기값이 false 이므로 아래의 코드 처럼 props로 전달받은 Loading 컴포넌트를 보여줍니다. 
 
 [react.js](https://github.com/rt2zz/redux-persist/blob/d7efde9115a0bd2d6a0309ac6fb1c018bf06dc30/src/integration/react.js#L64)
 ---
@@ -112,24 +114,20 @@ ReactDOM.render(
 
 이전에 ```persistConfig``` 오브젝트에 넣은 key값이 기억나시나요? 
 
-먼저 기록(Register) 과정을 거칩니다. 
+1. Redux Persist에서 이 값 별로 Reducer를 구분하며 다른 Redux Store인 ```_pStore``` 의 ```registry: []```라는 State에 저장하는 기록(Register) 과정을 거칩니다. 
 
-Redux Persist에서 이 값 별로 Reducer를 구분하며 다른 Store의 ```registry: []```라는 State에 저장해 기억합니다. 
-
-그 후에 이미 Storage에 저장된 Reducer의 State값이 있다면 그 값을 가져옵니다. 
-
-</br>
+2. 그 후에 이미 Storage에 저장된 값이 있다면 그 값을 가져옵니다.
 
 
-없다면 Storage에 State 값을 저장하는 재수화 과정을 거칩니다. 
+3. 없다면 Storage에 State 값을 저장하는 재수화 과정을 거칩니다. 
 
 
-모든 Reducer의 재수화가 완료되면 다른 Store에 저장된 또다른 state인 ```bootstrapped: boolean```의 값이 ```true```가 되면 ```<PersistGate/>```의 state 값을 바꿔 로딩을 해제합니다.
+4. 모든 Reducer의 재수화가 완료되면 ```_pStore```에 저장된 또다른 state인 ```bootstrapped: boolean```의 값이 ```true```가 되면 ```<PersistGate/>```의 ```bootstrapped``` state 값을 바꿔 로딩을 해제합니다.
 
 </br>
 
 ### Q) 2. REHYDRATE 액션은 어디서 호출되나요? 
-이전에 Counter 예제에서 ```persistReducer()```가 호출되는 것을 볼 수 있습니다. 
+이전에 Counter 예제에서 ```persistReducer()```가 있는 것을 볼 수 있습니다. 
 ```js
 const rootReducer = combineReducers({
   counterReducer: persistReducer(counterPersistConfig, counterReducer)
@@ -151,7 +149,7 @@ export default function persistReducer<State: Object, Action: Object>(
   return (state: State, action: Action) => {
     //...
     
-    // 여기서 어떤 액션이 오면 PERSIST 액션을 탐지 후 기능을 수행하고 두 번째 인자로 들어온 Reducer를 반환합니다.
+    // 여기서 어떤 액션이 오면 PERSIST 액션을 탐지하면 특정 기능을 수행하고 두 번째 인자로 들어온 Reducer를 반환합니다.
     // 나머지 액션도 비슷합니다.
     if (action.type === PERSIST) {
       return {
@@ -187,7 +185,7 @@ const store = createStore(rootReducer);
 const persistor = persistStore(store);
 ```
 
-```persistStore()```의 코드를 뜯어보면 아래의 명령문을 발견할 수 있습니다.
+```persistStore()```의 코드를 뜯어보면 코드의 밑 부분에서 아래의 명령문을 발견할 수 있습니다.
 
 persistStore.js
 ---
@@ -210,7 +208,7 @@ persistStore.js
 
 아하! 여기서 ```PERSIST``` 액션을 호출해주고 호출되면 각각의 ```persistReducer```에서 일련의 과정을 거칩니다.
 
-주제와 별개로 구조를 알아보자면 이 과정을 따라가다 보면 기록과정도 있고
+주제와 별개로 구조를 알아보자면 이 과정을 따라가다 보면 앞서 언급한 기록과정도 있고
 
 persistReducer.js
 ---
@@ -252,43 +250,90 @@ action.register(config.key)
       }
 ```
 
-이외에도  Transforms, ```conditionalUpdate```(blacklist, whitelist), State Reconciler의 과정도 중간에 있지만 이것들이 어떤 기능인지 뒤에가서 설명하겠습니다.
+이외에도  Transforms, ```conditionalUpdate```(blacklist, whitelist), State Reconciler의 과정도 중간에 있지만 이것들이 어떤 기능인지 다음 섹션에서 설명하겠습니다.
 
 ## 3. 여러 기능
+여러가지 기능이 있는데 그 중 Purge, Blacklist & Whitelist, State Reconciler, Transforms 순으로 알아보겠습니다.
 
-### Workflow
-beforeLift()-- ![ggg](https://user-images.githubusercontent.com/25196026/73251174-57203700-41b0-11ea-93d9-c1abb900aabc.png)
-
+### Purge
                                       
-### ```persistor.purge()```를 사용해 Local storage에 저장된State 초기화하기
+```persistor.purge()```를 사용해 Local storage에 저장된State 초기화하기
 
-1.원하는 부분에 purge()함수를 호출한다.
+</br>
 
-src\pages\loginPage\loginPage.tsx
+먼저 ```persistor.purge()```를 알아보겠습니다. 
+
+Counter 예제에서 이 부분이 기억나시나요?
+```js
+const store = createStore(rootReducer);
+const persistor = persistStore(store);
+```
+
+```persistStore(store);```에서 반환되는 ```persistor``` 오브젝트의 코드를 보면 이렇습니다.
+```js
+  let persistor: Persistor = {
+    ..._pStore,
+    purge: () => {
+      let results = []
+      store.dispatch({
+        type: PURGE,
+        result: purgeResult => {
+          results.push(purgeResult)
+        },
+      })
+      return Promise.all(results)
+    },
+    flush: () => {
+      let results = []
+      store.dispatch({
+        type: FLUSH,
+        result: flushResult => {
+          results.push(flushResult)
+        },
+      })
+      return Promise.all(results)
+    },
+    pause: () => {
+      store.dispatch({
+        type: PAUSE,
+      })
+    },
+    persist: () => {
+      store.dispatch({ type: PERSIST, register, rehydrate })
+    },
+  }
+```
+
+간단히 특정 Action을 Dispatch 해주는 것 밖에없습니다. 그러면 해당 Action은 ```persistReducer```에서 처리를 해줍니다.
+
+여기서 ```purge()```를 보시면 ``` return Promise.all(results)```을 호출해 비동기로 Storage에 저장된 각 Reducer의 State 값을 비동기적으로 삭제해줍니다. 
+
+이제 사용 예제를 보겠습니다.
+
+
+1.원하는 부분에 purge()함수를 호출합니다.
+
 ```ts
 import { persistor } from "../../stores";
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // on login success callback function
+  // 로그인이 성공할 때 호출되는 함수
   async onLoginSuccess(auth: AuthState) {
     auth.isAuthenticated = true;
     this.props.setAuth(auth);
     // redux-persist에 의해 local storage에 저장된 모든 데이터 초기화
+    // PURGE 액션이 호출됩니다.
     await persistor.purge();
 
     this.moveNextPage();
   }
 ```
 
-2.초기화를 원하는 reducer에 PURGE 액션을 구현한다.
+2.초기화를 원하는 Reducer에 PURGE 액션을 구현합니다.
 
-src\stores\dataStore\analysisDataStore-reducer.ts
 ```ts
 import { PURGE } from "redux-persist";
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// analysis data reducer
-export const AnalysisDataReducer = (state: AnalysisDataStoreState = initState(), action: AnalysisDataStoreAction) => {
+export const ItemReducer = (state: AnalysisDataStoreState = initState(), action: AnalysisDataStoreAction) => {
   switch (action.type) {
     case PURGE: {
       return initState();
@@ -315,11 +360,22 @@ export const AnalysisDataReducer = (state: AnalysisDataStoreState = initS
 };
 ```
 
-이제 onLoginSuccess 함수의 ```persistor.purge()```가 호출될 때마다 기본적으로 storage에 저장된 config.key에 따라 데이터가 삭제되고 리듀서에 PURGE 액션이 구현된 곳은 state가 초기화된다. 
+이제 onLoginSuccess 함수가 호출될 때마다 초기화 됩니다. 
 
-간혹, PURGE action이 호출 됐음에도 불구하고 storage가 비워지지 않는 경우가 있다. 예를 들어 componentDidMount()에서 액션을 호출 할 경우 여러번의 REHYDRATE 액션이 호출되어 Race conditoin이 발생할 수 있다. 이와 같은 때에 Race condition을 의심하라.
+간혹, Storage가 비워지지 않는 경우가 있습니다. 
 
-## Blacklist, whitelist를 사용해 특정 state 또는 reducer storage에 저장되지 않게 하기
+예를 들어 여러번의 REHYDRATE 액션이 호출될 때 PURGE 액션 또한 호출할 경우 입니다. 이 경우 Race conditoin이 발생해 비워지지 않을 수 있습니다.
+
+## Blacklist, Whitelist를 사용해 특정 값 저장되지 않게 하기/특정 값만 허용하기
+
+
+
+
+
+
+
+
+
 간단히 배열에 key(persistConfig.key)를 입력하면 해당 key를 제외한다.
 ```js
   // https://github.com/rt2zz/redux-persist/blob/master/src/createPersistoid.js#L110-L115 
@@ -420,8 +476,6 @@ autoMergeLevel2를 써야하는 이유: initial state가 업데이트되어 key�
 ### Transforms(local storage에 저장되기 바로전, 저장소에서 가져올때 수행할 작업)
 https://github.com/rt2zz/redux-persist/blob/master/README.md#transforms
 
-### Storage Engines
-https://github.com/rt2zz/redux-persist/blob/master/README.md#storage-engines
 
 ## 참조
 https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975
