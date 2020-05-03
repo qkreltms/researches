@@ -306,7 +306,7 @@ const persistor = persistStore(store);
 
 간단히 특정 Action을 Dispatch 해주는 것 밖에없습니다. 그러면 해당 Action은 ```persistReducer```에서 처리를 해줍니다.
 
-여기서 ```purge()```를 보시면 ``` return Promise.all(results)```을 호출해 비동기로 Storage에 저장된 각 Reducer의 State 값을 비동기적으로 삭제해줍니다. 
+여기서 ```purge()```를 보시면 ``` return Promise.all(results)```을 호출해 비동기로 Storage에 저장된 각 Reducer의 State 값을 비동기적으로  Storage에서 **삭제**해줍니다. 
 
 이제 사용 예제를 보겠습니다.
 
