@@ -1,8 +1,7 @@
 # Resaerches
 This is my personal researches of something what I interasted in.
 ## DOINGs:
-1. Redux-persist.js
-2. 
+
 ## TODOs:
 1. TDD And BDD
 2. JS Design patterns
@@ -14,4 +13,11 @@ This is my personal researches of something what I interasted in.
 8. Tensorflow.js
 
 ## DONEs
-Test library/framework
+1. Test library/framework
+2. Redux-persist.js
+3. Typescript - 외부 패키지 타입스크립트 지원하기
+4. MySQL - mysqljs 에러 핸들링하기 (부제: async function에서 throw 사용하기)
+5. MySQL - 해쉬태그를 위한 DB 설계
+6. Javascript - Currying and ES6 Arrow Functions
+7. Javascript - var, let, const 차이점은?
+8. Javascript - Arrow Function
