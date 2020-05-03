@@ -130,7 +130,7 @@ ReactDOM.render(
 
 </br>
 
-### Q) 2. REHYDRATE 액션은 어디서 호출되나요? (+구조 알아보기)
+### Q) 2. REHYDRATE(재수화) 액션은 어디서 호출되나요? (+구조 알아보기)
 이전에 Counter 예제에서 ```persistReducer()```가 있는 것을 볼 수 있습니다. 
 ```js
 const rootReducer = combineReducers({
@@ -138,7 +138,9 @@ const rootReducer = combineReducers({
 });
 ```
 
-```persistReducer```에 첫번째 인자로 config값을 넣어주고 두 번째로 Reducer를 넣어줍니다. 코드를 한번 뜯어볼까요?
+```persistReducer```에 첫번째 인자로 config값을 넣어주고 두 번째로 Reducer를 넣어줍니다. 
+
+코드를 한번 뜯어볼까요?
 
 persisReducer.js
 ---
@@ -393,7 +395,7 @@ REHYDRATED 액션이 실행되면 ```conditionalUpdate(newState)``` 이 함수�
 ```
 위와 같이 되어있습니다.
 
-```_persistoid.pudate(state)``` 함수의 코드를 따라가면 아래처럼 되어있고
+```_persistoid.update(state)``` 함수의 코드를 따라가면 아래처럼 되어있고
 
 ```js
  const update = (state: Object) => {
