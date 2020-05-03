@@ -116,17 +116,21 @@ ReactDOM.render(
 
 1. Redux Persist에서 이 값 별로 Reducer를 구분하며 다른 Redux Store인 ```_pStore``` 의 ```registry: []```라는 State에 저장하는 기록(Register) 과정을 거칩니다. 
 
-2. 그 후에 이미 Storage에 저장된 값이 있다면 그 값을 가져옵니다.
+2. 아래에 함수에서 이미 Storage에 저장된 값이 있다면 그 값을 get합니다.
+
+    ```getStoredState(config)```
 
 
-3. 없다면 Storage에 State 값을 저장하는 재수화 과정을 거칩니다. 
+3. 그 후에 아래의 함수에서 Storage에 State 값을 set하는 **재수화** 과정을 거칩니다. 
+
+    ``` writeStagedState()```
 
 
 4. 모든 Reducer의 재수화가 완료되면 ```_pStore```에 저장된 또다른 state인 ```bootstrapped: boolean```의 값이 ```true```가 되면 ```<PersistGate/>```의 ```bootstrapped``` state 값을 바꿔 로딩을 해제합니다.
 
 </br>
 
-### Q) 2. REHYDRATE 액션은 어디서 호출되나요? 
+### Q) 2. REHYDRATE 액션은 어디서 호출되나요? (+구조 알아보기)
 이전에 Counter 예제에서 ```persistReducer()```가 있는 것을 볼 수 있습니다. 
 ```js
 const rootReducer = combineReducers({
@@ -216,13 +220,13 @@ persistReducer.js
 action.register(config.key)
 ```
 
-이미 저장된 데이터를 Storage에서 가져오는 과정도 있고
+이미 저장된 데이터가 있을 때 Storage에서 가져오는 과정도 있고
 
 ```js
  getStoredState(config).then(...)
 ```
 
-저장된 데이터가  없을 때는 재수화해주는 과정도 있습니다.
+재수화해주는 과정도 있습니다.
 ```js
     } else if (action.type === REHYDRATE) {
       // noop on restState if purging
@@ -253,11 +257,11 @@ action.register(config.key)
 이외에도  Transforms, ```conditionalUpdate```(blacklist, whitelist), State Reconciler의 과정도 중간에 있지만 이것들이 어떤 기능인지 다음 섹션에서 설명하겠습니다.
 
 ## 3. 여러 기능
-여러가지 기능이 있는데 그 중 Purge, Blacklist & Whitelist, State Reconciler, Transforms 순으로 알아보겠습니다.
+여러가지 기능이 있는데 그 중 Purge, Blacklist & Whitelist, State Reconciler 순으로 알아보겠습니다.
 
 ### Purge
                                       
-```persistor.purge()```를 사용해 Local storage에 저장된State 초기화하기
+```persistor.purge()```를 사용하면 Storage에 저장된 데이터를 **삭제**할 수 있습니다.
 
 </br>
 
@@ -304,11 +308,11 @@ const persistor = persistStore(store);
   }
 ```
 
-간단히 특정 Action을 Dispatch 해주는 것 밖에없습니다. 그러면 해당 Action은 ```persistReducer```에서 처리를 해줍니다.
+간단히 특정 액션을 Dispatch 해주는 것 밖에없습니다. 그러면 해당 Action은 ```persistReducer```에서 처리를 해줍니다.
 
-여기서 ```purge()```를 보시면 ``` return Promise.all(results)```을 호출해 비동기로 Storage에 저장된 각 Reducer의 State 값을 비동기적으로  Storage에서 **삭제**해줍니다. 
+여기서 ```purge()```를 보시면 ``` return Promise.all(results)```을 호출해 원래 로직: Storage에 저장된 각 Reducer의 State 값을 **삭제**. 를 비동기로 만들어줍니다. 
 
-이제 사용 예제를 보겠습니다.
+이제 적용 예제를 보겠습니다.
 
 
 1.원하는 부분에 purge()함수를 호출합니다.
@@ -360,7 +364,7 @@ export const ItemReducer = (state: AnalysisDataStoreState = initState(),�
 };
 ```
 
-이제 onLoginSuccess 함수가 호출될 때마다 초기화 됩니다. 
+이제 ```onLoginSuccess``` 함수가 호출될 때마다 초기화 됩니다. 
 
 간혹, Storage가 비워지지 않는 경우가 있습니다. 
 
@@ -368,116 +372,158 @@ export const ItemReducer = (state: AnalysisDataStoreState = initState(),�
 
 ## Blacklist, Whitelist를 사용해 특정 값 저장되지 않게 하기/특정 값만 허용하기
 
+Blacklist는 배열에 Redux안의 State 이름을 적어주면 해당 데이터가 Storage에 저장되는 것을 막을 수 있습니다. 
 
+Whitelist는 똑같이 적어주면 해당 데이터만 Storage에 저장되도록 합니다.
 
+Redux Persist의 코드를 뜯어보겠습니다.
 
+REHYDRATED 액션이 실행되면 ```conditionalUpdate(newState)``` 이 함수가 실행됩니다.
 
+이 함수의 코드를 보면
+```js
+  const conditionalUpdate = state => {
+    // update the persistoid only if we are rehydrated and not paused
+    state._persist.rehydrated &&
+      _persistoid &&
+      !_paused &&
+      _persistoid.update(state)
+    return state
+  }
+```
+위와 같이 되어있습니다.
 
+```_persistoid.pudate(state)``` 함수의 코드를 따라가면 아래처럼 되어있고
 
+```js
+ const update = (state: Object) => {
+    // add any changed keys to the queue
+    Object.keys(state).forEach(key => {
+      if (!passWhitelistBlacklist(key)) return // is keyspace ignored? noop
+      if (lastState[key] === state[key]) return // value unchanged? noop
+      if (keysToProcess.indexOf(key) !== -1) return // is key already queued? noop
+      keysToProcess.push(key) // add key to queue
+    })
+```
 
+여기서 ```passWhitelistBlacklist(key)``` 함수에서 우리가 원하는 Blacklist, Whitelist의 작동 방식을 볼 수 있습니다.
 
-간단히 배열에 key(persistConfig.key)를 입력하면 해당 key를 제외한다.
 ```js
   // https://github.com/rt2zz/redux-persist/blob/master/src/createPersistoid.js#L110-L115 
   function passWhitelistBlacklist(key) {
+    // whitelist에 적은 특정 키 값만 저장을 허용한다.
     if (whitelist && whitelist.indexOf(key) === -1 && key !== '_persist')
       return false
+    // blacklist에 적은 키 값은 저장을 허용하지 않는다.
     if (blacklist && blacklist.indexOf(key) !== -1) return false
     return true
   }
 ```
-Blacklist를 사용하면 특정 key만 제외할 수 있고
-Whitelist를 사용하면 특정 key만 허용한다.
-
-
-특정 reducer의 특정 state 저장되지 않게하기:
-1.config에 blacklist를 추가한다.
-
-src\stores\rootReducer.ts
-```ts
-const analysisDataPersistConfig: PersistConfig<AnalysisDataStoreState> = {
-  key: "analysisData",
-  torage,
-  blacklist: ["selectedAnalysis"]
-}
-
-export const rootReducer: Reducer<CombineReducers, AnyAction> = combineReducers<CombineReducers>({
-  authReducer,
-  appCoreReducer,
-  selectedDataReducer,
-  workListPageReducer,
-  PatientDataReducer,
-  StudyDataReducer,
-  AssessmentDataReducer,
-  AnalysisDataReducer: persistReducer(analysisDataPersistConfig, AnalysisDataReducer)
-});
-```
-
-이제 AnalysisDataReducer의 selectedAnalysis는 local storage에 저장되지 않는다.
-
-특정 reducer 저장되지 않게하기
-src\stores\rootReducer.ts
-```ts
-const analysisDataPersistConfig: PersistConfig<AnalysisDataStoreState> = {
-  key: "analysisData",
-  storage,
-  whitelist: []
-}
-
-export const rootReducer: Reducer<CombineReducers, AnyAction> = combineReducers<CombineReducers>({
-  authReducer,
-  appCoreReducer,
-  selectedDataReducer,
-  workListPageReducer,
-  PatientDataReducer,
-  StudyDataReducer,
-  AssessmentDataReducer,
-  AnalysisDataReducer: persistReducer(analysisDataPersistConfig, AnalysisDataReducer)
-});
-```
-
-이제 AnalysisDataReducer의 모든 state는 local storage에 저장되지 않는다.
 
 ### State Reconciler
-*(특별한 이유가 없다면 사용할 필요 없음. default 값 사용(전달된 state 그대로 저장))*
+재수화 액션이 발동되면 새로운 데이터가 Storage에 덮어쓰게 되는데 이 때에 Storage에서 get해서 가져온 데이터와 오는 데이터(초기값 또는 변경된 값)가 어떤 식으로 합쳐질지 결정합니다. 
 
-state가 어떤식으로 새로오는 state와 합쳐질지 정의한다.
+```js
+        // inboundState: Storage에 이미 존재하는 데이터
+        let reconciledRest: State =
+          stateReconciler !== false && inboundState !== undefined
+            ? stateReconciler(inboundState, state, reducedState, config)
+            : reducedState
 
-1. **hardSet** (`import hardSet from 'redux-persist/lib/stateReconciler/hardSet'`)
-This will hard set incoming state. This can be desirable in some cases where persistReducer is nested deeper in your reducer tree, or if you do not rely on initialState in your reducer.
-   - **incoming state**: `{ foo: incomingFoo }`
-   - **initial state**: `{ foo: initialFoo, bar: initialBar }`
-   - **reconciled state**: `{ foo: incomingFoo }` // note bar has been dropped
-2. **autoMergeLevel1** (default)
-This will auto merge one level deep. Auto merge means if the some piece of substate was modified by your reducer during the REHYDRATE action, it will skip this piece of state. Level 1 means it will shallow merge 1 level deep.
-   - **incoming state**: `{ foo: incomingFoo }`
-   - **initial state**: `{ foo: initialFoo, bar: initialBar }`
-   - **reconciled state**: `{ foo: incomingFoo, bar: initialBar }` // note incomingFoo overwrites initialFoo
-3. **autoMergeLevel2** (`import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2'`)
-This acts just like autoMergeLevel1, except it shallow merges two levels
-   - **incoming state**: `{ foo: incomingFoo }`
-   - **initial state**: `{ foo: initialFoo, bar: initialBar }`
-   - **reconciled state**: `{ foo: mergedFoo, bar: initialBar }` // note: initialFoo and incomingFoo are shallow merged
+        let newState = {
+          ...reconciledRest,
+          _persist: { ..._persist, rehydrated: true },
+        }
+        return conditionalUpdate(newState)
+```
 
+1. hardSet
 
-import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
-```ts
-src\stores\rootReducer.ts
-const analysisDataPersistConfig: PersistConfig<AnalysisDataStoreState> = {
-  key: "analysisData",
-  storage,
-  stateReconciler: autoMergeLevel2,
-  blacklist: ["selectedAnalysis"]
+이미 저장된 값을 씁니다.
+
+```js
+export default function hardSet<State: Object>(inboundState: State): State {
+  return inboundState
 }
 ```
 
-autoMergeLevel2를 써야하는 이유: initial state가 업데이트되어 key가 하나 늘어났을 때 autoMergeLeve1, hardSet사용시 기존에 local storage에 저장된 값으로 덮어 씀으로 initial state의 새로운 key가 제거된다. [참조](https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975)
+```js
+이미 Storage에 저장된 state:      { foo: incomingFoo }
+State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
+결과:                            { foo: incomingFoo } // note bar has been dropped
+```
+2. autoMergeLevel1 (default)
 
-### Transforms(local storage에 저장되기 바로전, 저장소에서 가져올때 수행할 작업)
-https://github.com/rt2zz/redux-persist/blob/master/README.md#transforms
+key가 같은건 이미 저장된 값을 쓰되, 나머지는 그대로 덮어씁니다. 
+
+```js
+  let newState = { ...reducedState }
+
+  //...
+
+  newState[key] = inboundState[key]
+```
+
+```js
+이미 Storage에 저장된 state:      { foo: incomingFoo }
+State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
+결과:                            { foo: incomingFoo, bar: initialBar } // note incomingFoo overwrites initialFoo
+```
+
+3. autoMergeLevel2
+
+key가 같은 값도 오브젝트라면 덮어 씁니다. 나머지는 그대로 덮어씁니다.
+
+```js
+let newState = { ...reducedState }
+
+//...
+
+   if (isPlainEnoughObject(reducedState[key])) {
+        // if object is plain enough shallow merge the new values (hence "Level2")
+        newState[key] = { ...newState[key], ...inboundState[key] }
+        return
+      }
+      // otherwise hard set
+      newState[key] = inboundState[key]
+```
+
+```js
+이미 Storage에 저장된 state:      { foo: incomingFoo }
+State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
+결과:                            { foo: mergedFoo, bar: initialBar } // note: initialFoo and incomingFoo are shallow merged
+```
+
+여기서 autoMergeLevel2를 더 알아 보겠습니다.
+만약 아래의 state 값일 때 app을 실행했고
+```js
+const INITIAL_STATE = {
+  currentUser: null,
+  isLoggingIn: false,
+};
+```
+
+이후에 error를 추가했다고 해보겠습니다.
+
+```js
+const INITIAL_STATE = {
+  currentUser: null,
+  isLoggingIn: false,
+  error: ''
+};
+```
+
+hardSet 이나 autoMergeLevel1이라면 어떻게 됐을까요?
+
+이미 저장된 값 우선이므로 ```error``` 가 사라지게
+됩니다. [(1)](https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975)
+
+</br>
+
+개인적으로는 별다른 이유가 없다면 autoMergeLevel2를 쓰시는것을 추천드립니다.
 
 
 ## 참조
-https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975
+(1)https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975
 
 https://github.com/rt2zz/redux-persist
