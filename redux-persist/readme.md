@@ -102,8 +102,8 @@ ReactDOM.render(
 
 
 1. 콘솔 창에 ```loading...```이 나타납니다.
-2. Redux dev console 창을 확인하면 ```persistReducer```가 감싸진 각각의 Reducer들은 REHYDRATE 액션이 호출됩니다.
-3. F12를 눌러 DevTools 창에서 Application > Storage > Local Storage 항목을 확인하면 각 Reducer의 State 값이 저장된 것을 확인할 수 있습니다. 
+2. F12를 눌러 Redux Dev Console을 확인하면 ```persistReducer```가 감싸진 각각의 Reducer들은 ```REHYDRATE``` 액션이 호출됩니다.
+3. F12를 눌러 DevTools에서 Application > Storage > Local Storage 항목을 확인하면 각 Reducer의 State 값이 저장된 것을 확인할 수 있습니다. 
 
 위의 결과를 토대로 질문하고 답하는 Q/A 형식으로 진행하겠습니다.
 
@@ -112,7 +112,7 @@ ReactDOM.render(
 # Q) 2.1. ```<PersistGate/>```의 역할은 무엇인가요?
 
  
-```<PersistGate/>```의 bootstraped 라는 state 변수의 초기값이 false 이므로 아래의 코드 처럼 props로 전달받은 Loading 컴포넌트를 보여줍니다. 
+```<PersistGate/>```의 ```state.bootstraped = false``` 이므로 아래의 코드 처럼 props로 전달받은 Loading 컴포넌트를 보여줍니다. 
 
 [react.js](https://github.com/rt2zz/redux-persist/blob/d7efde9115a0bd2d6a0309ac6fb1c018bf06dc30/src/integration/react.js#L64)
 ---
@@ -125,25 +125,28 @@ ReactDOM.render(
 
 이전에 ```persistConfig``` 오브젝트에 넣은 key 값이 기억나시나요? 
 
-1. Redux Persist에서 key 값 별로 Reducer를 구분하며 다른 Redux Store인 ```_pStore``` 의 ```registry: []```라는 State에 저장하는 기록(register) 과정을 거칩니다. 
+1. Redux Persist에서 ```config.key``` 값 별로 Reducer를 등록합니다.
+
+    다른 Redux Store인 ```_pStore``` 의 ```registry: []```라는 State에 key 값을 저장하는 등록(Register) 과정을 거칩니다. 
 
 2. 아래에 함수에서 이미 Storage에 저장된 값이 있다면 그 값을 get합니다.
 
     ```getStoredState(config)```
 
 
-3. 그 후에 아래의 함수에서 Storage에 State 값을 set하는 **재수화** 과정을 거칩니다. 특정 Reducer의 State가 Storage에 저장되는 재수화가 완료되면 ```registry```에서 해당 Reducer를 목록에서 제거하며 나머지도 계속 진행합니다.
+3. 그 후에 아래의 함수에서 특정 Reducer의 State를 Storage에 저장하는 **재수화** 과정을 거칩니다. 재수화가 완료되면 ```registry```에서 해당 Reducer를 제거하고 나머지도 계속 진행합니다.
 
     ``` writeStagedState()```
 
 
-4. ```registry```가 빈 배열이 되면  ```_pStore```에 저장된 또다른 state인 ```bootstrapped: boolean```의 값이 ```true```가 되면 ```<PersistGate/>```의 ```bootstrapped``` state 값을 바꿔 로딩을 해제합니다.
+4. ```registry```가 빈 배열이 되면  ```_pStore```에 저장된 또다른 state인 ```bootstrapped: boolean```의 값이 ```true```가 되면 ```<PersistGate/>```의 ```bootstrapped``` State 값을 바꿔 로딩을 해제합니다.
 
 정리하면 모든 Reducer의 재수화가 완료됐는지 여부를 알 수 있습니다.
 
 </br>
 
 # Q) 2.2. ```REHYDRATE```(재수화) 액션은 어디서부터 개시되나요? (+구조 알아보기)
+
 이전에 Counter 예제에서 ```persistReducer()```가 있는 것을 볼 수 있습니다. 
 ```js
 const rootReducer = combineReducers({
@@ -151,7 +154,7 @@ const rootReducer = combineReducers({
 });
 ```
 
-```persistReducer```에 첫번째 인자로 config값을 넣어주고 두 번째로 Reducer를 넣어줍니다. 
+```persistReducer```에 첫번째 인자로 Config 값을 넣어주고 두 번째로 Reducer를 넣어줍니다. 
 
 코드를 한번 뜯어볼까요?
 
@@ -237,13 +240,13 @@ if (action.type === PERSIST) {
 
   action.register(config.key)
 
- getStoredState(config).then(
+  getStoredState(config).then(
         restoredState => {
           //...
               _rehydrate(migratedState)
 ```
 
-참고로 ```_rehydrate(migratedState)``` 함수가 호출되면 ```REHYDRATE``` 액션도 호출됩니다. 
+```_rehydrate(migratedState)``` 함수가 호출되면 ```REHYDRATE``` 액션도 호출됩니다. 
 
 ```REHYDRATE``` 액션이 발동될 때 어떤 로직이 실행되는지 아래의 코드로 보겠습니다.
 
@@ -274,7 +277,7 @@ if (action.type === PERSIST) {
       }
 ```
 
-Transforms, ```conditionalUpdate```(blacklist, whitelist), State Reconciler의 과정이 있다는 것을 볼 수 있습니다. 
+재수화 과정에 ```conditionalUpdate```(blacklist, whitelist), State Reconciler의 과정이 있다는 것을 볼 수 있습니다. 
 
 이 기능들이 어떤 기능인지 다음 섹션에서 알아보겠습니다.
 
@@ -282,17 +285,18 @@ Transforms, ```conditionalUpdate```(blacklist, whitelist), State Reconciler의 �
 
 # 3. 여러 기능
 
-여러가지 기능이 있는데 그 중 Purge, Blacklist & Whitelist, State Reconciler 순으로 알아보겠습니다.
+Redux Persist에는 여러가지 기능이 있습니다.
+
+ 그 중 3가지 Purge, Blacklist & Whitelist, State Reconciler을 알아보겠습니다.
 
 </br>
 
 # 3.1. Purge
                                       
-```persistor.purge()```를 사용하면 Storage에 저장된 데이터를 **삭제**할 수 있습니다.
+Storage에 저장된 데이터를 **삭제**하고 다른 값으로 초기화 할 수 있습니다.
 
 </br>
 
-먼저 ```persistor.purge()```를 알아보겠습니다. 
 
 Counter 예제에서 이 부분이 기억나시나요?
 ```js
@@ -335,9 +339,17 @@ const persistor = persistStore(store);
   }
 ```
 
-간단히 특정 액션을 dispatch 해주는 것 밖에없습니다. 그러면 해당 액션은 ```persistReducer```에서 처리를 해줍니다.
+간단히 특정 액션을 dispatch 해주는 것 밖에없습니다. 그러면 해당 액션은 ```persistReducer```에서 ```purgeStoredState()```를 호출해 처리해줍니다.
 
-여기서 ```purge()```를 보시면 ```Promise.all(results)```을 호출해 Storage에 저장된 각 Reducer의 State 값을 **삭제**하는 원래 로직을 비동기로 만들어줍니다. 
+```js
+export default function purgeStoredState(config: PersistConfig) {
+  const storage = config.storage
+  const storageKey = `${
+    config.keyPrefix !== undefined ? config.keyPrefix : KEY_PREFIX
+  }${config.key}`
+  return storage.removeItem(storageKey, warnIfRemoveError)
+}
+```
 
 이제 적용 예제를 보겠습니다.
 
@@ -368,6 +380,7 @@ const initState = () => { item: [] }
 export const itemReducer = (state = initState(), action) => {
   switch (action.type) {
     case PURGE: {
+      // Storage에 저장된 데이터가 삭제 된 후 오브젝트가 초기화 됩니다.
       return initState();
     }
 
@@ -418,7 +431,7 @@ const persistConfig = {
 ```
 
 
-Redux Persist의 코드를 뜯어보겠습니다.
+코드를 뜯어보겠습니다.
 
 REHYDRATE 액션이 실행되면 ```conditionalUpdate(newState)``` 이 함수가 실행됩니다.
 
@@ -465,23 +478,24 @@ REHYDRATE 액션이 실행되면 ```conditionalUpdate(newState)``` 이 함수가
 </br>
 
 # 3.3. State Reconciler
-재수화 액션이 발동되면 새로운 데이터가 Storage에 덮어쓰게 되는데 이 때에 Storage에서 get해서 가져온 데이터와 오는 데이터(초기값 또는 변경된 값)가 어떤 식으로 합쳐질지 결정합니다. 
+재수화 액션이 발동되면 새로운 데이터가 Storage에 덮어쓰게 되는데 이 때에 Storage에서 get해서 가져온 데이터와 Application에서 오는 데이터(초기값 또는 변경된 값)가 어떤 식으로 합쳐질지 결정합니다. 
 
 ```js
-        // inboundState: Storage에 이미 존재하는 데이터
-        let reconciledRest: State =
-          stateReconciler !== false && inboundState !== undefined
-            ? stateReconciler(inboundState, state, reducedState, config)
-            : reducedState
+// inboundState: Storage에 이미 존재하는 데이터
+  let reconciledRest: State =
+  stateReconciler !== false && inboundState !== undefined
+    ? stateReconciler(inboundState, state, reducedState, config)
+    : reducedState
 
-        let newState = {
-          ...reconciledRest,
-          _persist: { ..._persist, rehydrated: true },
-        }
-        return conditionalUpdate(newState)
+  let newState = {
+    ...reconciledRest,
+     _persist: { ..._persist, rehydrated: true },
+  }
+
+  return conditionalUpdate(newState)
 ```
 
-1. hardSet
+# 3.3.1. hardSet
 
 이미 저장된 값을 씁니다.
 
@@ -496,7 +510,7 @@ export default function hardSet<State: Object>(inboundState: State): State {
 State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 결과:                            { foo: incomingFoo } // note bar has been dropped
 ```
-2. autoMergeLevel1 (default)
+# 3.3.2. autoMergeLevel1 (default)
 
 key가 같은건 이미 저장된 값을 쓰되, 나머지는 그대로 덮어씁니다. 
 
@@ -514,7 +528,7 @@ State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 결과:                            { foo: incomingFoo, bar: initialBar } // note incomingFoo overwrites initialFoo
 ```
 
-3. autoMergeLevel2
+# 3.3.3 autoMergeLevel2
 
 key가 같은 값도 오브젝트라면 덮어 씁니다. 나머지는 그대로 덮어씁니다.
 
@@ -538,8 +552,8 @@ State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 결과:                            { foo: mergedFoo, bar: initialBar } // note: initialFoo and incomingFoo are shallow merged
 ```
 
-여기서 autoMergeLevel2를 더 알아 보겠습니다.
-만약 아래의 state 값일 때 app을 실행했고
+여기서 ```autoMergeLevel2```를 더 알아 보겠습니다.
+만약 아래의 State 값일 때 Applicaion을 실행했고
 ```js
 const INITIAL_STATE = {
   currentUser: null,
@@ -547,7 +561,7 @@ const INITIAL_STATE = {
 };
 ```
 
-이후에 error를 추가했다고 해보겠습니다.
+이후에 오브젝트에 ```error```를 추가했다고 가정해 보겠습니다.
 
 ```js
 const INITIAL_STATE = {
@@ -557,14 +571,14 @@ const INITIAL_STATE = {
 };
 ```
 
-hardSet 이나 autoMergeLevel1이라면 어떻게 됐을까요?
+```hardSet``` 이나 ```autoMergeLevel1``` 이라면 어떻게 됐을까요?
 
 이미 저장된 값 우선이므로 ```error``` 가 사라지게
 됩니다. [(1)](https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975)
 
 </br>
 
-개인적으로는 별다른 이유가 없다면 autoMergeLevel2를 쓰시는것을 추천드립니다.
+개인적으로는 별다른 이유가 없다면 ```autoMergeLevel2```를 쓰시는것을 추천드립니다.
 
 
 # 참조
