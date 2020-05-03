@@ -7,7 +7,7 @@
 하지만 Redux에 저장된 데이터는 새로 고침 버튼을 누르거나 종료하는 순간 날아가 버리고 맙니다. 
 날아가는 것을 방지하기 위해서 흔히 데이터를 Javascript Web Storage API를 통해 Storage에 저장하는데요. 
 
-Redux Persist의 ```persistReducer```를 특정 Reducer와 결합해주기만 하면 Storage에서 저장된 값을 가져옵니다. 여기서 만약 저장된 데이터가 없다면 저장하는 rehydrate(재수화) 과정을 거칩니다.
+Redux Persist의 ```persistReducer```를 특정 Reducer와 결합해주기만 하면 Storage에서 저장된 값을 가져옵니다. 여기서 만약 저장된 데이터가 없다면 Storage에 저장하는 rehydrate(재수화) 과정을 거칩니다.
 
 Redux Persist는 어떤 면에서는 미들웨어와 비슷한 역할을 합니다.
 
