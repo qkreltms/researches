@@ -6,7 +6,7 @@
 하지만 Redux에 저장된 데이터는 새로고침 버튼을 누르거나 종료하는 순간 날아가 버리고 맙니다. 
 날아가는 것을 방지하기 위해서 흔히 데이터를 Storage에 저장하는데요. 
 
-Redux Persist의 ```persistReducer```를 Reducer를 특정 Reducer와 결합해주기만 하면 Rehydrate(재수화)라는 과정을 거친후 이 Reducer에 액션이 Dispatch 때마다 적절히 Stroage에 데이터를 저장/관리해줍니다. 여기서 말하는 재수화는 Storage에 저장된 데이터를 가져오는 과정을 말합니다.
+Redux Persist의 ```persistReducer```를 Reducer를 특정 Reducer와 결합해주기만 하면 Storage에서 저장된 값을 가져옵니다. 여기서 만약 저장된 데이터가 없다면 저장하는 Rehydrated(재수화)과정을 거칩니다.
 
 Redux Persist는 어떤 면에서는 미들웨어와 비슷한 역할을 합니다.
 
