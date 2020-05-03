@@ -505,6 +505,7 @@ export default function hardSet<State: Object>(inboundState: State): State {
 }
 ```
 
+예제:
 ```js
 이미 Storage에 저장된 state:      { foo: incomingFoo }
 State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
@@ -522,6 +523,7 @@ key가 같은건 이미 저장된 값을 쓰되, 나머지는 그대로 덮어�
   newState[key] = inboundState[key]
 ```
 
+예제:
 ```js
 이미 Storage에 저장된 state:      { foo: incomingFoo }
 State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
@@ -546,6 +548,7 @@ let newState = { ...reducedState }
       newState[key] = inboundState[key]
 ```
 
+예제:
 ```js
 이미 Storage에 저장된 state:      { foo: incomingFoo }
 State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
