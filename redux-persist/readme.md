@@ -539,13 +539,14 @@ let newState = { ...reducedState }
 
 //...
 
-   if (isPlainEnoughObject(reducedState[key])) {
-        // if object is plain enough shallow merge the new values (hence "Level2")
-        newState[key] = { ...newState[key], ...inboundState[key] }
-        return
-      }
-      // otherwise hard set
-      newState[key] = inboundState[key]
+if (isPlainEnoughObject(reducedState[key])) {
+    // if object is plain enough shallow merge the new values (hence "Level2")
+    newState[key] = { ...newState[key], ...inboundState[key] }
+    return
+  }
+  
+  // otherwise hard set
+  newState[key] = inboundState[key]
 ```
 
 예제:
