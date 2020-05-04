@@ -103,14 +103,14 @@ ReactDOM.render(
 
 1. 콘솔 창에 ```loading...```이 나타납니다.
 
-    ![vv](./loading.png)
+    ![vv](./loading.jpg)
 
 2. F12를 눌러 Redux Dev Console을 확인하면 ```persistReducer```가 감싸진 각각의 Reducer들은 ```REHYDRATE``` 액션이 호출됩니다.
 
-    ![vv](./action.png)
+    ![vv](./action.jpg)
 3. F12를 눌러 DevTools에서 Application > Storage > Local Storage 항목을 확인하면 각 Reducer의 State 값이 저장된 것을 확인할 수 있습니다. 
 
-    ![vv](./storage.png)
+    ![vv](./storage.jpg)
 
 위의 결과를 토대로 질문하고 답하는 Q/A 형식으로 진행하겠습니다.
 
