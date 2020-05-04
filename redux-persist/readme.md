@@ -102,8 +102,15 @@ ReactDOM.render(
 
 
 1. 콘솔 창에 ```loading...```이 나타납니다.
+
+    ![vv](./loading.png)
+
 2. F12를 눌러 Redux Dev Console을 확인하면 ```persistReducer```가 감싸진 각각의 Reducer들은 ```REHYDRATE``` 액션이 호출됩니다.
+
+    ![vv](./action.png)
 3. F12를 눌러 DevTools에서 Application > Storage > Local Storage 항목을 확인하면 각 Reducer의 State 값이 저장된 것을 확인할 수 있습니다. 
+
+    ![vv](./storage.png)
 
 위의 결과를 토대로 질문하고 답하는 Q/A 형식으로 진행하겠습니다.
 
@@ -228,9 +235,11 @@ persistStore.js
     },
 ```
 
-아하! 여기서 ```PERSIST``` 액션을 호출해주고 호출되면서 시작되는군요! 해당 액션이 호출되면 이전에 언급했던 등록(register) 과정도 있고
+아하! 여기서 ```PERSIST``` 액션을 호출해주고 호출되면서 시작되는군요! 
 
-이미 저장된 데이터가 있을 때 Storage에서 가져오는 과정도 있고 재수화해주는 과정도 있습니다.
+해당 액션이 호출되면 ```persistReducer()```가 래핑된 각각의 Reducer에 이전에 언급했던 등록(register)과
+
+이미 저장된 데이터가 있을 때 Storage에서 가져오는 과정도 있고 재수화가 이뤄집니다.
 
 persistReducer.js
 ---
