@@ -504,6 +504,8 @@ createPersistoid.js
 # 3.3. State Reconciler
 재수화 액션이 발동되면 새로운 데이터가 Storage에 덮어쓰게 되는데 이 때에 Storage에서 get해서 가져온 데이터와 Application에서 오는 데이터(초기값 또는 변경된 값)가 어떤 식으로 합쳐질지 결정합니다. 
 
+persistReducer.js
+---
 ```js
 // inboundState: Storage에 이미 존재하는 데이터
   let reconciledRest: State =
@@ -523,6 +525,8 @@ createPersistoid.js
 
 이미 저장된 값을 씁니다.
 
+hardSet.js
+---
 ```js
 export default function hardSet<State: Object>(inboundState: State): State {
   return inboundState
@@ -539,6 +543,8 @@ State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 
 key가 같은건 이미 저장된 값을 쓰되, 나머지는 그대로 덮어씁니다. 
 
+autoMergeLevel1.js
+---
 ```js
   let newState = { ...reducedState }
 
@@ -558,6 +564,8 @@ State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 
 key가 같은 값도 오브젝트라면 덮어 씁니다. 나머지는 그대로 덮어씁니다.
 
+autoMergeLevel2.js
+---
 ```js
 let newState = { ...reducedState }
 
