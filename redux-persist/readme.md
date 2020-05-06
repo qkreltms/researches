@@ -455,6 +455,9 @@ const persistConfig = {
 REHYDRATE 액션이 실행되면 ```conditionalUpdate(newState)``` 이 함수가 실행됩니다.
 
 이 함수의 코드를 보면
+
+persistReducer.js
+---
 ```js
   const conditionalUpdate = state => {
     // update the persistoid only if we are rehydrated and not paused
@@ -469,6 +472,8 @@ REHYDRATE 액션이 실행되면 ```conditionalUpdate(newState)``` 이 함수가
 
 ```_persistoid.update(state)``` 함수의 코드를 따라가면 아래처럼 되어있고
 
+createPersistoid.js
+---
 ```js
  const update = (state: Object) => {
     // add any changed keys to the queue
