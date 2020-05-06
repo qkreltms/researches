@@ -1,5 +1,7 @@
 # Redux Persist를 소개합니다.
 
+![vv](./1.gif)
+
 **Reducer의 State값을 Web storage(이하 Storage라 지칭)에 저장/관리합니다.**
 
 흔히 여러 컴포넌트를 거치지 않고 손쉽게 State를 전달하기 위해 혹은 분리해서 중앙화하기 위해 Redux를 사용합니다.
@@ -640,6 +642,14 @@ App.js
 ```
 
 ![undefined](https://user-images.githubusercontent.com/25196026/81135870-c322f000-8f94-11ea-971e-930e57e9c3ff.gif)
+
+# 마치면서...
+
+여러분들은 Redux Persist를 활용하는 방법을 배우셨고, 그 라이브러리가 어떤 원리로 작동하는 방법도 알아보았습니다.
+
+이제 어떤 데이터를 저장할 것인지 저장하지 않을것인지 구분해 프로젝트에 적용해보세요.   
+
+> 이 튜토리얼을 준비 할 수 있도록 도움을 주신 김대희님께 감사를 드립니다. 그리고, 이 강의를 검수해주신  한상진님, 께 감사드립니다.
 
 # 참조
 (1) https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975
