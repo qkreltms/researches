@@ -1,6 +1,6 @@
 # Redux Persist를 소개합니다.
 
-![vv](./1.gif)
+![Redux Persist Thumbnail](https://user-images.githubusercontent.com/25196026/81137268-2dd62a80-8f99-11ea-9b02-91488fc52111.jpg)
 
 **Reducer의 State값을 Web storage(이하 Storage라 지칭)에 저장/관리합니다.**
 
