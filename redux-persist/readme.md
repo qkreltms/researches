@@ -155,6 +155,9 @@ ReactDOM.render(
 # Q) 2.2. ```REHYDRATE```(재수화) 액션은 어디서부터 개시되나요? (+구조 알아보기)
 
 이전에 Counter 예제에서 ```persistReducer()```가 있는 것을 볼 수 있습니다. 
+
+index.js
+---
 ```js
 const rootReducer = combineReducers({
   counterReducer: persistReducer(counterPersistConfig, counterReducer)
