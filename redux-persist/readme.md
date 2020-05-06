@@ -631,12 +631,12 @@ const init = () => ({
 App.js
 ---
 ```js
-        <button
-          onClick={() => {
-            console.log(counter.error);
-            increasement();
-          }}
-        >
+<button
+ onClick={() => {
+  console.log(counter.error);
+  increasement();
+ }}
+>
 ```
 
 ![undefined](https://user-images.githubusercontent.com/25196026/81135870-c322f000-8f94-11ea-971e-930e57e9c3ff.gif)
