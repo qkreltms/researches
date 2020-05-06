@@ -308,11 +308,16 @@ Storage에 저장된 데이터를 **삭제**하고 다른 값으로 초기화 �
 
 
 Counter 예제에서 이 부분이 기억나시나요?
+
+index.js
+---
 ```js
 const store = createStore(rootReducer);
 const persistor = persistStore(store);
 ```
 
+persistStore.js
+---
 ```persistStore(store);```에서 반환되는 ```persistor``` 오브젝트의 코드를 보면 이렇습니다.
 ```js
   let persistor: Persistor = {
@@ -350,6 +355,8 @@ const persistor = persistStore(store);
 
 간단히 특정 액션을 dispatch 해주는 것 밖에없습니다. 그러면 해당 액션은 ```persistReducer```에서 ```purgeStoredState()```를 호출해 처리해줍니다.
 
+purgeStoredState.js 
+---
 ```js
 export default function purgeStoredState(config: PersistConfig) {
   const storage = config.storage
@@ -593,6 +600,30 @@ const INITIAL_STATE = {
 
 개인적으로는 별다른 이유가 없다면 ```autoMergeLevel2```를 쓰시는것을 추천드립니다.
 
+완성된 Counter 예제에 ```error```을 추가해보겠습니다.
+
+index.js
+---
+```js
+const init = () => ({
+  counter: { updatedAt: new Date().toString(), name: "initial counter", cnt: 0, error: false }
+});
+```
+
+이 값을 increasement() 함수가 호출될 때 콘솔창에 찍어보겠습니다.
+
+App.js
+---
+```js
+        <button
+          onClick={() => {
+            console.log(counter.error);
+            increasement();
+          }}
+        >
+```
+
+![undefined](https://user-images.githubusercontent.com/25196026/81135870-c322f000-8f94-11ea-971e-930e57e9c3ff.gif)
 
 # 참조
 (1) https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975
