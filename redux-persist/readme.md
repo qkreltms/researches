@@ -143,7 +143,7 @@ ReactDOM.render(
     ```getStoredState(config)```
 
 
-3. 그 후에 아래의 함수에서 특정 Reducer의 State를 Storage에 저장하는 **재수화** 과정을 거칩니다. 재수화가 완료되면 ```registry```에서 해당 Reducer를 제거하고 나머지도 계속 진행합니다.
+3. 그 후에 아래의 함수에서 특정 Reducer의 State를 Storage에 저장하는 **재수화** 과정을 거칩니다. 재수화가 완료되면 ```registry```에서 해당 Reducer를 제거하고 나머지도 계속 진행합니다. 2, 3번을 등록된 Reducer 만큼 반복합니다.
 
     ``` writeStagedState()```
 
