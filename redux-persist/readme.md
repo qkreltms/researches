@@ -504,7 +504,7 @@ createPersistoid.js
 </br>
 
 # 3.3. State Reconciler
-재수화 액션이 발동되면 새로운 데이터가 Storage에 덮어쓰게 되는데 이 때에 Storage에서 get해서 가져온 데이터와 Application에서 오는 데이터(초기값 또는 변경된 값)가 어떤 식으로 합쳐질지 결정합니다. 
+재수화 액션이 발동되면 먼저 Storage에 데이터가 있다면 get해온 후 이 데이터와 Application에서 오는 데이터(action으로 오는 값)가 어떤 식으로 합쳐질지 결정합니다. 
 
 persistReducer.js
 ---
