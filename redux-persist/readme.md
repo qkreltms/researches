@@ -138,7 +138,7 @@ ReactDOM.render(
 
     다른 Redux Store인 ```_pStore``` 의 ```registry: []```라는 State에 key 값을 저장하는 등록(Register) 과정을 거칩니다. 
 
-2. 아래에 함수에서 이미 Storage에 저장된 값이 있다면 그 값을 get합니다.
+2. 아래에 함수에서 이미 Storage에 저장된 Reducer의 State 값이 있다면 그 값을 get합니다.
 
     ```getStoredState(config)```
 
