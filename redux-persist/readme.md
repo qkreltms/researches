@@ -653,9 +653,9 @@ export default function hardSet<State: Object>(inboundState: State): State {
 
 예제:
 ```js
-inboundState:                    { foo: incomingFoo }
-Application에서 오는 State 값:   { foo: initialFoo, bar: initialBar }
-결과:                            { foo: incomingFoo } // note bar has been dropped
+inboundState(Storage에 저장된 값):{ foo: incomingFoo }
+Application에서 오는 State 값:    { foo: initialFoo, bar: initialBar }
+결과:                             { foo: incomingFoo } // note bar has been dropped
 ```
 # 3.3.2. autoMergeLevel1 (default)
 
