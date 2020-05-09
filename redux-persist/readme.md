@@ -15,7 +15,7 @@ Redux Persist는 어떤 면에서는 미들웨어와 비슷한 역할을 합니�
 
  Reducer의 State 값을 Storage에서 get/set을 하기 전 Reducer의 특정 State만 저장을 하게 할 수 있고 Transforms 기능을 사용해 암호/복호화를 할 수 도 있으니까요. 
  
- 참고로 이후에 설명해 드릴 ```PURGE``` 액션을 호출할 때를 제외하고 Storage에서 데이터를 delete를 하지 않습니다. 그 대신 State Reconsiler라는 기능을 제공해 기존에 Storage에 저장된 오브젝트와 Application에서 오는 오브젝트가 어떻게 병합될 것인지 결정할 수 있죠. 
+ 추가로 이후에 설명해 드릴 ```PURGE``` 액션을 호출할 때를 제외하고 Storage에서 데이터를 delete를 하지 않습니다. 그 대신 State Reconsiler라는 기능을 제공해 기존에 Storage에 저장된 오브젝트와 Application에서 오는 오브젝트가 어떻게 병합될 것인지 결정할 수 있죠. 
 
 # 목차
 아래의 3가지로 항목을 나눠 진행하겠습니다.
