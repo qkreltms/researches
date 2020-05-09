@@ -138,17 +138,29 @@ ReactDOM.render(
 
     다른 Redux Store인 ```_pStore``` 의 ```registry: []```라는 State에 key 값을 저장하는 등록(Register) 과정을 거칩니다. 
 
-2. 아래에 함수에서 이미 Storage에 저장된 Reducer의 State 값이 있다면 그 값을 get합니다.
-
-    ```getStoredState(config)```
+2. 아래에 함수에서 이미 Storage에 저장된 Reducer의 State 값이 있다면 그 값을 get하고, REHYDRATE 액션이 dispatch 됩니다. ***```getStoredState(...)``` 함수가 호출되면 어떤 일이 발생되는지는 State Reconiler 섹션에서 좀 더 구체적으로 알아보겠습니다.***
 
 
-3. 그 후에 아래의 함수에서 특정 Reducer의 State를 Storage에 저장하는 **재수화** 과정을 거칩니다. 재수화가 완료되면 ```registry```에서 해당 Reducer를 제거하고 나머지도 계속 진행합니다. 2, 3번을 등록된 Reducer 만큼 반복합니다.
+persistReducer.js 
+---
+```js
+ getStoredState(config).then( ... )
+```
 
-    ``` writeStagedState()```
+3. 그 후에 아래의 함수에서 특정 Reducer의 State를 Storage에 저장하는 **재수화** 과정을 거칩니다.
+
+createPersistoid.js 
+---
+```js
+ if (keysToProcess.length === 0) {
+   writeStagedState()
+}
+```
+
+4. 재수화가 완료되면 ```registry```에서 해당 Reducer를 제거하고 나머지도 계속 진행합니다. 2, 3번을 등록된 Reducer 만큼 반복합니다.
 
 
-4. ```registry```가 빈 배열이 되면  ```_pStore```에 저장된 또다른 state인 ```bootstrapped: boolean```의 값이 ```true```가 되면 ```<PersistGate/>```의 ```bootstrapped``` State 값을 바꿔 로딩을 해제합니다.
+5. ```registry```가 빈 배열이 되면  ```_pStore```에 저장된 또다른 state인 ```bootstrapped: boolean```의 값이 ```true```가 되면 ```<PersistGate/>```의 ```bootstrapped``` State 값을 바꿔 로딩을 해제합니다.
 
 정리하면 모든 Reducer의 재수화가 완료됐는지 여부를 알 수 있습니다.
 
