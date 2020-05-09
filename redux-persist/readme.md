@@ -654,7 +654,7 @@ export default function hardSet<State: Object>(inboundState: State): State {
 예제:
 ```js
 inboundState:                    { foo: incomingFoo }
-State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
+Application에서 오는 State 값:   { foo: initialFoo, bar: initialBar }
 결과:                            { foo: incomingFoo } // note bar has been dropped
 ```
 # 3.3.2. autoMergeLevel1 (default)
@@ -674,7 +674,7 @@ autoMergeLevel1.js
 예제:
 ```js
 inboundState:                    { foo: incomingFoo }
-State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
+Application에서 오는 State 값:   { foo: initialFoo, bar: initialBar }
 결과:                            { foo: incomingFoo, bar: initialBar } // note incomingFoo overwrites initialFoo
 ```
 
@@ -702,7 +702,7 @@ if (isPlainEnoughObject(reducedState[key])) {
 예제:
 ```js
 inboundState:                    { foo: incomingFoo }
-State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
+Application에서 오는 State 값:   { foo: initialFoo, bar: initialBar }
 결과:                            { foo: mergedFoo, bar: initialBar } // note: initialFoo and incomingFoo are shallow merged
 ```
 
