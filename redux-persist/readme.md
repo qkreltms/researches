@@ -603,9 +603,11 @@ persistStore.js
   }
 ```
 
-위의 코드를 보시면, ```getStoredState(...)``` 함수를 호출해서 Storage에서 가져온 데이터를 REHYDRATE 액션과 함께 store에 disaptch 해줍니다. 그러면 ```persistReducer(...)```에서 if  REHYDRATE 관련 로직이 실행됩니다.
+위의 코드를 보시면, ```getStoredState(...)``` 함수를 호출해서 Storage에서 가져온 데이터를 REHYDRATE 액션과 함께 Store에 disaptch 해줍니다. 그러면 ```persistReducer(...)```에서 REHYDRATE 관련 로직이 실행됩니다.
 
 그럼 이제 Storage에서 가져온 값이 ```action.payload```라는 형태로 오게되고 ```inboundState```로 값을 옮기는 것을 알 수 있습니다. 
+
+Storage에서 가져온 데이터가 없을 때는 Application에서 오는 값을 그대로 저장합니다.
 
 ```js
  } else if (action.type === REHYDRATE) {
