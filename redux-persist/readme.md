@@ -138,7 +138,7 @@ ReactDOM.render(
 
     다른 Redux Store인 ```_pStore``` 의 ```registry: []```라는 State에 key 값을 저장하는 등록(Register) 과정을 거칩니다. 
 
-2. 아래에 함수에서 이미 Storage에 저장된 Reducer의 State 값이 있다면 그 값을 get하고, REHYDRATE 액션이 dispatch 됩니다. ***```getStoredState(...)``` 함수가 호출되면 어떤 일이 발생되는지는 State Reconiler 섹션에서 좀 더 구체적으로 알아보겠습니다.***
+2. 아래에 함수에서 이미 Storage에 저장된 Reducer의 State 값이 있다면 그 값을 get 하고 REHYDRATE 액션을 dispatch 합니다. ***```getStoredState(...)``` 함수가 호출되면 어떤 일이 발생되는지는 State Reconiler 섹션에서 좀 더 구체적으로 알아보겠습니다.***
 
 
 persistReducer.js 
@@ -516,7 +516,7 @@ createPersistoid.js
 </br>
 
 # 3.3. State Reconciler
-재수화 액션이 발동될 때 Storage에 데이터가 있다면 get해온 후 이 데이터와 Application에서 오는 데이터(action으로 오는 값)가 어떤 식으로 합쳐질지 결정합니다. 
+재수화 액션이 발동될 때 Storage에 데이터가 있다면 get해온 후 이 데이터(inboundState)와 Application에서 오는 데이터(action으로 오는 값)가 어떤 식으로 합쳐질지 결정합니다. 
 
 persistReducer.js
 ---
@@ -535,6 +535,108 @@ persistReducer.js
   return conditionalUpdate(newState)
 ```
 
+위의 코드를 보시면 ```stateReconciler(...)``` 함수의 첫번째 인자 ```inboundState```는 어디서 온 값일까요?
+Storage에서 저장된 값을 가져오는 ```getStoredState(...)``` 함수를 좀 더 알아보겠습니다. 복잡하므로 잘 따라와 주세요.
+
+persistStore.js
+---
+
+```js
+ getStoredState(config).then(
+        restoredState => {
+          const migrate = config.migrate || ((s, v) => Promise.resolve(s))
+          migrate(restoredState, version).then(
+            migratedState => {
+              _rehydrate(migratedState)
+              //...
+```
+
+```_rehydrate(migratedState)``` 함수를 보시면 Storage에서 가져온 데이터를 ```migratedState```라는 이름으로 이 함수의 인자로 넘겨줍니다. (해당 Reducer의 저장된 State값이 없으면 undefined일 수도 있습니다.) 이 함수의 코드를 보면 이렇게 생겼습니다.
+
+```js
+let _rehydrate = (payload, err) => {
+        // dev warning if we are already sealed
+        if (process.env.NODE_ENV !== 'production' && _sealed)
+          console.error(
+            `redux-persist: rehydrate for "${
+              config.key
+            }" called after timeout.`,
+            payload,
+            err
+          )
+
+        // only rehydrate if we are not already sealed
+        if (!_sealed) {
+          action.rehydrate(config.key, payload, err)
+          _sealed = true
+        }
+      }
+```
+
+```_rehydrate(...)``` 함수를 살펴보면 ```action.rehydrate(...)``` 을 호출하는 것을 볼 수 있습니다.
+```action``` 오브젝트에 언제 ```rehydrate(...)``` 라는 함수가 붙여서 왔을까요? 코드를 따라가면 ```persistStore.js```에서 최초에 PERSIST 액션을 dispatch 할 때 함수를 같이 넣어준 것을 볼 수 있습니다.
+
+persistStore.js
+---
+```js
+ store.dispatch({ type: PERSIST, register, rehydrate })
+``` 
+
+그리고 persistStore.js의 ```rehydrate``` 함수는 이렇게 생겼습니다.
+
+```js
+  let rehydrate = (key: string, payload: Object, err: any) => {
+    let rehydrateAction = {
+      type: REHYDRATE,
+      // 아래의 key에 Storage에서 가져온 값을 넣어줍니다.
+      payload,
+      err,
+      key,
+    }
+    // dispatch to `store` to rehydrate and `persistor` to track result
+    store.dispatch(rehydrateAction)
+    _pStore.dispatch(rehydrateAction)
+    if (boostrappedCb && persistor.getState().bootstrapped) {
+      boostrappedCb()
+      boostrappedCb = false
+    }
+  }
+```
+
+위의 코드를 보시면, ```getStoredState(...)``` 함수를 호출해서 Storage에서 가져온 데이터를 REHYDRATE 액션과 함께 store에 disaptch 해줍니다. 그러면 ```persistReducer(...)```에서 if  REHYDRATE 관련 로직이 실행됩니다.
+
+그럼 이제 Storage에서 가져온 값이 ```action.payload```라는 형태로 오게되고 ```inboundState```로 값을 옮기는 것을 알 수 있습니다. 
+
+```js
+ } else if (action.type === REHYDRATE) {
+      // noop on restState if purging
+      if (_purge)
+        return {
+          ...restState,
+          _persist: { ..._persist, rehydrated: true },
+        }
+
+      // @NOTE if key does not match, will continue to default else below
+      if (action.key === config.key) {
+        let reducedState = baseReducer(restState, action)
+        let inboundState = action.payload
+        // only reconcile state if stateReconciler and inboundState are both defined
+        let reconciledRest: State =
+          stateReconciler !== false && inboundState !== undefined
+            ? stateReconciler(inboundState, state, reducedState, config)
+            : reducedState
+
+        let newState = {
+          ...reconciledRest,
+          _persist: { ..._persist, rehydrated: true },
+        }
+        return conditionalUpdate(newState)
+      }
+    }
+```
+
+정리하면 PERSIST 액션이 호출되면 저장된 데이터를 가져오고 없으면 .undefined로 합니다. 그 후 REHYDRATE 액션을 다시 호출할 때 데이터를 넣어 줍니다.
+
 # 3.3.1. hardSet
 
 이미 저장된 값을 씁니다.
@@ -549,7 +651,7 @@ export default function hardSet<State: Object>(inboundState: State): State {
 
 예제:
 ```js
-이미 Storage에 저장된 state:      { foo: incomingFoo }
+inboundState:                    { foo: incomingFoo }
 State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 결과:                            { foo: incomingFoo } // note bar has been dropped
 ```
@@ -569,7 +671,7 @@ autoMergeLevel1.js
 
 예제:
 ```js
-이미 Storage에 저장된 state:      { foo: incomingFoo }
+inboundState:                    { foo: incomingFoo }
 State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 결과:                            { foo: incomingFoo, bar: initialBar } // note incomingFoo overwrites initialFoo
 ```
@@ -597,7 +699,7 @@ if (isPlainEnoughObject(reducedState[key])) {
 
 예제:
 ```js
-이미 Storage에 저장된 state:      { foo: incomingFoo }
+inboundState:                    { foo: incomingFoo }
 State의 초기값 또는 변경된 state: { foo: initialFoo, bar: initialBar }
 결과:                            { foo: mergedFoo, bar: initialBar } // note: initialFoo and incomingFoo are shallow merged
 ```
