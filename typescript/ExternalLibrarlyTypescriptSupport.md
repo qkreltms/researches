@@ -72,7 +72,7 @@ typescript-playground
  |         ├── simple-flexbox
  |                ├── index.d.ts
  ```
- 2. tsconfig.json에 "typeRoots": ["./node_modules/@types", "./@types"] 를 추가한다.
+ 2. tsconfig.json에 "typeRoots": ["./@types"] 를 추가한다.
 example:
 ```
 {
@@ -80,7 +80,7 @@ example:
     "target": "es5",ue,
     "skipLibCheck": true,
     "..."
-    "typeRoots": ["./node_modules/@types", "./@types"]
+    "typeRoots": ["./@types"]
   },
 }
 ```
