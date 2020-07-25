@@ -11,6 +11,8 @@ This is my personal researches of something what I interasted in.
 6. Docker
 7. Storybook.js
 8. Tensorflow.js
+9. D3
+10. immer.js
 
 ## DONEs
 1. Test library/framework
