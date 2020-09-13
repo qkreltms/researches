@@ -5,8 +5,12 @@
 2. Hackatalk에서 배운 방식 - contextAPI와 ref를 이용해서 global하게 쓰기.
 3. Ant-design에서 배운 방식 - 함수형으로 만들어 재활용하기
 
-## Bootsrap에서 쓰는 방식
+## 내 첫 Modal 컴포넌트
+대학교 3학년 때 js에 첫 발을 내딛고 데이트 어플을 만들때였죠.
+이 때는 React 없이 바닐라 js를 사용했고, 그 때는 Bootstrap이 대세였습니다.
+이 때는 Modal을 어떻게 썼는지 볼까요?
 공식홈페이지에서 가져온 예제 코드입니다.
+
 ```
 <!-- Button trigger modal -->
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#staticBackdrop">
@@ -34,10 +38,22 @@
   </div>
 </div>
 ```
-각 페이지마다 modal 컴포넌트를 호출하고 state를 하나 두어 키고 끈다. 
+Modal을 쓰려는 페이지에 두고 버튼을 누르면 display 속성을 'none', 'block'으로 바꿔, 키고 끄는 형식입니다.
+한 동안 이 방식을 애용했었죠. 그러나 React로 넘어오면서는 중복을 줄이기 위해 컴포넌트화를 진행하고 ```props.isShow```로 키고 끄는 형태로 사용하게 됩니다.
+거기에 더해서 Modal을 최상단에 두기 위해 Portal을 사용하기도 했습니다.
 
+쓰려는 페이지마다 컴포넌트를 불러와서 props를 넘겨줘야 하고 그에 따른 state를 만들어줘야 됐지만, 크게 불편함을 느끼지 않고 사용해왔습니다.
+
+그러다가 Dooboolab이라는 곳에서 오픈소스 기여를하다가 한번의 전환점을 맞이하게 됩니다.
+
+Portal을 사용할 필요가 없고
+함수형으로 호출이 가능하며 
+컴포넌트를 불러올 필요가 없습니다.
+그 방법은 바로....
+Context API를 사용해 ref를 주입하는 방식입니다.
+
+// 출처: https://github.com/dooboolab/hackatalk/blob/master/client/src/providers/ProfileModalProvider.tsx
 ```
-// https://github.com/dooboolab/hackatalk/blob/master/client/src/providers/ProfileModalProvider.tsx
 import React, { MutableRefObject, useReducer } from 'react';
 
 import { Ref as ProfileModalRef } from '../components/shared/ProfileModal';
@@ -60,10 +76,6 @@ export interface State {
 interface Context {
   state: State;
   showModal: (showModalParams: ShowModalParams) => void;
-  // setUser: (user: User) => void;
-  // setShowAddBtn: (deleteMode: boolean) => void;
-  // setScreen: (screen: string) => void;
-  // open: () => void;
 }
 
 const [useCtx, Provider] = createCtx<Context>();
@@ -151,6 +163,7 @@ const ProfileContext = {
 export { useCtx as useProfileContext, ProfileModalProvider };
 export default ProfileContext;
 ```
+
 ```
 
 // https://github.com/dooboolab/hackatalk/blob/master/client/src/components/navigation/MainStackNavigator.tsx
@@ -185,17 +198,20 @@ function RootNavigator(): ReactElement {
 
     <ProfileModalProvider>
       // 주입할 컴포넌트
+      <RootComponent />
     </ProfileModalProvider>
 ```
-장점:
-단점:
-## Hackatalk에서 배운 방식 - contextAPI와 ref를 이용해서 global하게 쓰기.
 
-index 파일에 Modal 컴포넌트를 호출하고 ref 값을 contextAPI의 state값에 저장한다.
 
-함수를 호출해 컴포넌트를 호출한다ㅏ
-장점: 함수로 호출가능
-단점: contextAPI를 써야한다. 
+핵심은 위와 같이 Context API를 만들고 showModal를 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
+
+
+이 코드를 이해하는데 시간이 좀 걸렸지만, 상당히 혁신적인 방법이라고 느꼈습니다. 특히, 함수형으로 호출이 가능하다는게 크게 다가왔죠. 
+
+이 방식을 배운다음에 바로 제가 참여중인 프로젝트에 이 방식을 적용했습니다. 덕분에 한동안은 잘 쓸수 있었죠.
+
+그러다가 어느날... 우연히 오픈소스를 뜯어보다가 오늘 얘기하고 싶은, 더 혁신적인 방법을 찾게됩니다.
+
 ## Ant-design
 
 핵심:   const div = document.createElement('div');
