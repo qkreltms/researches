@@ -210,12 +210,246 @@ export default function confirm(config: ModalFuncProps) {
 간단히 ```confirm()```을 호출하는 형식으로 켤 수 있습니다.
 Ant-design 에서 Modal 코드만 빼오면서 여러 기능을 살펴보겠습니다.
 
-1. 한번에 여러 모달 띄우기
-1. 하나 모달 띄울 때 나머지 모달 닫기
-1. 모달 재활용하기
+이제 예제를 시작하겠습니다. 먼저,
+
+Codesandbox에서 React 세팅을 하고 Modal 컴포넌트는 간단히 Reactstrap에서 쓰는 걸로 대체하겠습니다.
+
+1. Codesandbox.io에 접속해 React + Typescript를 선택합니다.
+
+1. reactstrap, @types/reactstrap을 설치합니다.
+
+1. index.tsx 파일에서 코드 한줄 추가합니다.
+
+```js
+import "bootstrap/dist/css/bootstrap.min.css";
+```
+
+1. src/myModal.tsx 파일을 생성합니다.
+
+1. confirm 함수 코드를 작성합니다. 이 함수의 컨트롤러의 역할을 합니다.
+```js
+export const confirm = (config: ConfirmDialogProps = {}) => {
+  // div를 생성합니다.
+  const div = document.createElement("div");
+  document.body.appendChild(div);
+  let currentConfig: ConfirmDialogProps = { ...config, isVisible: true };
+
+  const destroy = () => {
+    const unmountResult = ReactDOM.unmountComponentAtNode(div);
+    if (unmountResult && div.parentNode) {
+      div.parentNode.removeChild(div);
+    }
+
+    for (let i = 0; i < destroyFns.length; i += 1) {
+      const fn = destroyFns[i];
+      if (fn === close) {
+        destroyFns.splice(i, 1);
+        break;
+      }
+    }
+  };
+
+  // 이 함수에서 Modal 컴포넌트를 렌더링 합니다.
+  const render = ({ ...props }: ConfirmDialogProps) => {
+    setTimeout(() => {
+      // 위에서 미리 만든 div에 Modal 컴포넌트를 달아줍니다.
+      ReactDOM.render(<ConfirmDialog {...props} />, div);
+    });
+  };
+
+  const update = (newConfig: ConfirmDialogProps) => {
+    currentConfig = {
+      ...currentConfig,
+      ...newConfig
+    };
+    render(currentConfig);
+  };
+
+  const close = () => {
+    currentConfig = {
+      ...currentConfig,
+      isVisible: false,
+      afterClose: destroy
+    };
+    render(currentConfig);
+  };
+
+  // render 함수를 실행합니다.
+  render(currentConfig);
+
+  destroyFns.push(close);
+
+  return {
+    close: destroy,
+    update
+  };
+};
+
+export default confirm;
+```
+
+1. Modal에 사용되는 state의 재활용을 위해서 hook을 하나 만들어줍니다.
+```js
+export const useModal = (
+  isVisible = true
+): [boolean, () => void, () => void] => {
+  const [isOpen, setIsOpen] = useState<boolean>(isVisible);
+
+  useEffect(() => {
+    setIsOpen(isVisible);
+  }, [isVisible]);
+  const open = () => {
+    setIsOpen(true);
+  };
+
+  const close = () => {
+    setIsOpen(false);
+  };
+
+  return [isOpen, open, close];
+};
+```
+
+1. 이제 Modal 컴포넌트를 만듭니다.
+```js
+
+export interface ConfirmDialogProps {
+  onClickOk?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onClickClose?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  afterClose?: () => void;
+  isVisible?: boolean;
+  isCloseOnClick?: boolean;
+  message?: string;
+  okText?: string;
+  closeText?: string;
+  contents?: (
+    isOpen: boolean,
+    onClickOk?: ConfirmDialogProps["onClickOk"],
+    onClickClose?: ConfirmDialogProps["onClickClose"],
+    message?: string,
+    okText?: string,
+    closeText?: string
+  ) => any;
+}
+
+export interface ContentProps {
+  isOpen: boolean;
+  onClickOk?: ConfirmDialogProps["onClickOk"];
+  onClickClose?: ConfirmDialogProps["onClickClose"];
+  message?: string;
+  okText?: string;
+  closeText?: string;
+}
+export const ConfirmDialog = ({
+  isVisible = true,
+  isCloseOnOk = true,
+  okText = "OK",
+  closeText = "Close",
+  message = "",
+  afterClose = () => {},
+  onClickOk = (event: React.MouseEvent<HTMLButtonElement>) => {},
+  onClickClose = (event: React.MouseEvent<HTMLButtonElement>) => {},
+  contents = ({
+    isOpen = true,
+    onClickOk = (event: React.MouseEvent<HTMLButtonElement>) => {},
+    onClickClose = (event: React.MouseEvent<HTMLButtonElement>) => {},
+    message = "",
+    okText = "OK",
+    closeText = "Close"
+  }: ContentProps) => (
+    <Modal isOpen={isOpen} onClosed={() => afterClose()}>
+      <ModalBody>{message}</ModalBody>
+      <ModalFooter>
+        <button type="button" onClick={onClickOk}>
+          {okText}
+        </button>
+        <button type="button" onClick={onClickClose}>
+          {closeText}
+        </button>
+      </ModalFooter>
+    </Modal>
+  )
+}) => {
+  const [isOpen, , close] = useModal(isVisible);
+
+  const onClickOkHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onClickOk(event);
+    if (isCloseOnOk) {
+      close();
+    }
+  };
+  const onClickCloseHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onClickClose(event);
+    close();
+  };
+  return (
+    <div>
+      /* 받은 props를 그대로 contents에 넣어줍니다. */
+      {contents({
+        isOpen,
+        onClickOk: onClickOkHandler,
+        onClickClose: onClickCloseHandler,
+        message,
+        okText,
+        closeText
+      })}
+    </div>
+  );
+};
+
+```
+
+1. 모든 Modal을 닫을 수 있는 코드를 추가해줍니다.
+```js
+
+export const destroyFns: Array<() => void> = [];
+
+export const destroyAll = () => {
+  while (destroyFns.length) {
+    const close = destroyFns.pop();
+    if (close) {
+      close();
+    }
+  }
+};
+```
+
+1. 마지막으로 App.tsx에서 우리가 만든 Modal을 호출해보겠습니다.
+```js
+export default function App() {
+  return (
+    <div className="App">
+      <h1>Hello CodeSandbox</h1>
+      <h2>Start editing to see some magic happen!</h2>
+      <button
+        type="button"
+        onClick={() => {
+          confirm({ message: "1" });
+          confirm({ message: "2" });
+          destroyAll();
+          confirm({ message: "3" }).close();
+        }}
+      >
+        confirm
+      </button>
+    </div>
+  );
+}
+```
+
+위에 사용된 코드는 [여기](https://codesandbox.io/s/mymodal-kw19e?file=/src/App.tsx)서 볼 수 있습니다.
+
+1. 코드 재활용하기
+```contents```를 분리했으니 ```confirm()```에 값을 넣어 원하는 contents로 바꿀 수 있습니다. 예를 들어 버튼이 하나만 있는 warn 등이 있습니다.
+```js
+export function withWarn(props: ConfirmDialogProps): ConfirmDialogProps {
+  return {
+    contents: ...
+  };
+}
+
+export warn = confirm(withWarn)
+```
+
 1. 하나의 모달 재활용하기 - update 활용
-https://codesandbox.io/s/mymodal-kw19e?file=/src/myModal.tsx
-
-
-
-
+```confirm().update()```를 활용하면 업데이트된 props를 보냄으로써 재활용이 가능합니다. 
