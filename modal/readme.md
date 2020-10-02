@@ -12,30 +12,14 @@
 공식홈페이지에서 가져온 예제 코드입니다.
 
 ```
-<!-- Button trigger modal -->
+<!-- 트리거 버튼을 누르면 아래의 모달 컴포넌트가 디스플레이됩니다. -->
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#staticBackdrop">
   Launch static backdrop modal
 </button>
 
 <!-- Modal -->
 <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Understood</button>
-      </div>
-    </div>
-  </div>
+  // ...
 </div>
 ```
 Modal을 쓰려는 페이지에 두고 버튼을 누르면 display 속성을 'none', 'block'으로 바꿔, 키고 끄는 형식입니다.
@@ -50,45 +34,9 @@ Portal을 사용할 필요가 없고
 함수형으로 호출이 가능하며 
 컴포넌트를 불러올 필요가 없습니다.
 그 방법은 바로....
-Context API를 사용해 ref를 주입하는 방식입니다.
+Context API를 사용해 ref를 주입하는 방식입니다. 핵심적인 부분만 보겠습니다.
 
-// 출처: https://github.com/dooboolab/hackatalk/blob/master/client/src/providers/ProfileModalProvider.tsx
 ```
-import React, { MutableRefObject, useReducer } from 'react';
-
-import { Ref as ProfileModalRef } from '../components/shared/ProfileModal';
-import { User } from '../types/graphql';
-import createCtx from '../utils/createCtx';
-
-interface ShowModalParams {
-  user: User;
-  deleteMode: boolean;
-  onDeleteFriend?: () => void;
-  onAddFriend?: () => void;
-}
-
-export interface State {
-  user: User;
-  deleteMode: boolean;
-  modal?: React.MutableRefObject<ProfileModalRef | null>;
-}
-
-interface Context {
-  state: State;
-  showModal: (showModalParams: ShowModalParams) => void;
-}
-
-const [useCtx, Provider] = createCtx<Context>();
-
-export enum ActionType {
-  ShowModal = 'show-modal',
-}
-
-export interface Payload extends State {
-  onDeleteFriend?: () => void;
-  onAddFriend?: () => void;
-}
-
 const initialState: State = {
   user: {
     id: '',
@@ -97,17 +45,11 @@ const initialState: State = {
     statusMessage: '',
   },
   deleteMode: false,
+  // ref를 주입받을 modal state입니다.
   modal: undefined,
 };
 
-type Action = { type: ActionType.ShowModal; payload: Payload };
-
-interface Props {
-  children?: React.ReactElement;
-}
-
-type Reducer = (state: State, action: Action) => State;
-
+// showModal action입니다.
 const showModal = (dispatch: React.Dispatch<Action>) => ({
   user,
   deleteMode,
@@ -125,6 +67,7 @@ const showModal = (dispatch: React.Dispatch<Action>) => ({
   });
 };
 
+// 액션을 처리할 Reducer입니다.
 const reducer: Reducer = (state = initialState, action) => {
   const { type, payload } = action;
   const { modal } = state;
@@ -145,6 +88,7 @@ const reducer: Reducer = (state = initialState, action) => {
   }
 };
 
+// provider로 하위 컴포넌트에 showModal 액션을 전달해 줍니다.
 function ProfileModalProvider(props: Props): React.ReactElement {
   const [state, dispatch] = useReducer<Reducer>(reducer, initialState);
 
@@ -155,22 +99,13 @@ function ProfileModalProvider(props: Props): React.ReactElement {
   return <Provider value={{ state, ...actions }}>{props.children}</Provider>;
 }
 
-const ProfileContext = {
-  useProfileContext: useCtx,
-  ProfileModalProvider,
-};
+//우리의 modal 컴포넌트가 있는 컴포넌트입니다. 웹에 비유하면 App.jsx 위치쯤이라 보면 됩니다.
 
-export { useCtx as useProfileContext, ProfileModalProvider };
-export default ProfileContext;
-```
-
-```
-
-// https://github.com/dooboolab/hackatalk/blob/master/client/src/components/navigation/MainStackNavigator.tsx
 function RootNavigator(): ReactElement {
   const navigation = useNavigation();
   const { state } = useProfileContext();
   const modalEl = useRef(null);
+  // 컨텍스트에 modal ref를 주입해줍니다.
   state.modal = modalEl;
   return (
     <View
@@ -195,13 +130,11 @@ function RootNavigator(): ReactElement {
   );
 }
 
-
+// 이제 원하는 컴포넌트에 Provider로 액션을 전달하고 원하는 때에 액션을 dispatch 하면 됩니다. 
     <ProfileModalProvider>
-      // 주입할 컴포넌트
       <RootComponent />
     </ProfileModalProvider>
 ```
-
 
 핵심은 위와 같이 Context API를 만들고 showModal를 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
 
@@ -214,10 +147,8 @@ function RootNavigator(): ReactElement {
 
 ## Ant-design
 
-핵심:   const div = document.createElement('div');
-  document.body.appendChild(div);
-   ReactDOM.render(...)
-   
+핵심적인 부분만 보겠습니다.
+
 ```
 export default function confirm(config: ModalFuncProps) {
   const div = document.createElement('div');
@@ -225,32 +156,13 @@ export default function confirm(config: ModalFuncProps) {
   // eslint-disable-next-line no-use-before-define
   let currentConfig = { ...config, close, visible: true } as any;
 
-  function destroy(...args: any[]) {
-    const unmountResult = ReactDOM.unmountComponentAtNode(div);
-    if (unmountResult && div.parentNode) {
-      div.parentNode.removeChild(div);
-    }
-    const triggerCancel = args.some(param => param && param.triggerCancel);
-    if (config.onCancel && triggerCancel) {
-      config.onCancel(...args);
-    }
-    for (let i = 0; i < destroyFns.length; i++) {
-      const fn = destroyFns[i];
-      // eslint-disable-next-line no-use-before-define
-      if (fn === close) {
-        destroyFns.splice(i, 1);
-        break;
-      }
-    }
-  }
-
   function render({ okText, cancelText, prefixCls, ...props }: any) {
     /**
      * https://github.com/ant-design/ant-design/issues/23623
      * Sync render blocks React event. Let's make this async.
      */
     setTimeout(() => {
-      const runtimeLocale = getConfirmLocale();
+      // js 코드로 Modal 컴포넌트를 렌더링합니다.
       ReactDOM.render(
         <ConfirmDialog
           {...props}
@@ -264,26 +176,8 @@ export default function confirm(config: ModalFuncProps) {
     });
   }
 
-  function close(...args: any[]) {
-    currentConfig = {
-      ...currentConfig,
-      visible: false,
-      afterClose: destroy.bind(this, ...args),
-    };
-    render(currentConfig);
-  }
-
-  function update(newConfig: ModalFuncProps) {
-    currentConfig = {
-      ...currentConfig,
-      ...newConfig,
-    };
-    render(currentConfig);
-  }
-
+// render 함수를 호출합니다.
   render(currentConfig);
-
-  destroyFns.push(close);
 
   return {
     destroy: close,
@@ -292,10 +186,10 @@ export default function confirm(config: ModalFuncProps) {
 }
 ```
 
-장점: 함수로 호출가능
-단점:
-afterClose 일 때 컴포넌트를 삭제한다.
-=> dom 재활용? => DOM 재활용시 고려할 이슈가 많다 하나? 여러개 허용?, 하나만 혀용하고 에니메이션이 있는 modal이 있을 때 그 것을 종료하고 삭제, 여러개 일 때 각 DOM에 유니크 id를 부여하고 식별 가능해야 됨 등등 난이도 상승, 이것에 투자할 가치가 있는가??(DOM 하나 삭제, 생성 성능상 이슈는 적음)
+간단히 ```confirm()```을 호출하는 형식으로 Modal을 켤 수 있습니다.
+ant-design 에서 modal 코드만 빼와서 여러 기능을 살펴보며 저만의 방식으로 만들어 보겠습니다.
+
+
 
 
 한번에 여러 모달 띄우기
