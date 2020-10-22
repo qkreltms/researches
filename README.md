@@ -1,7 +1,7 @@
 # Resaerches
 This is my personal researches of something what I interasted in.
 ## DOINGs:
-
+1. react-query
 ## TODOs:
 1. TDD And BDD
 2. JS Design patterns
@@ -13,6 +13,7 @@ This is my personal researches of something what I interasted in.
 8. Tensorflow.js
 9. D3
 10. immer.js
+11. Three.js
 
 ## DONEs
 1. Test library/framework
