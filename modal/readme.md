@@ -47,7 +47,7 @@ Portal을 사용할 필요가 없고
 
 Context API를 사용해 Modal ref를 주입하는 방식입니다. 
 
-핵심은 위와 같이 Context API를 만들고 showModal를 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
+핵심은 Modal 용 Context API를 만들고 모달을 여는 액션을 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
 
 
 ```js
