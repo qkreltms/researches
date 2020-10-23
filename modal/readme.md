@@ -2,7 +2,7 @@
 
 ## 목차
 1. Bootstrap에서 쓰는 방식
-2. Hackatalk에서 배운 방식 - contextAPI와 ref를 이용해서 global하게 쓰기
+2. Hackatalk에서 배운 방식 - context를 이용해서 global하게 쓰기
 3. Ant-design에서 배운 방식 - 함수형으로 만들어 재활용하기
 ---
 
@@ -35,7 +35,7 @@ Modal을 쓰려는 페이지에 두고 버튼을 누르면 display 속성을 'no
 그러다가 Dooboolab이라는 곳에서 오픈소스 기여를하다가 한번의 전환점을 맞이하게 됩니다.
 
 ---
-## Hackatalk에서 배운 방식 - contextAPI와 ref를 이용해서 global하게 쓰기
+## Hackatalk에서 배운 방식 - context를 이용해서 global하게 쓰기
 
 Portal을 사용할 필요가 없고
 중복코드를 상당히 줄여주고
