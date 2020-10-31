@@ -14,6 +14,8 @@ This is my personal researches of something what I interasted in.
 8. Tensorflow.js
 9. D3
 10. immer.js
+11. Three.js
+12. react-query
 
 ## DONEs
 1. Test library/framework

@@ -2,7 +2,7 @@
 
 ## 목차
 1. Bootstrap에서 쓰는 방식
-2. Hackatalk에서 배운 방식 - contextAPI와 ref를 이용해서 global하게 쓰기
+2. Hackatalk에서 배운 방식 - context를 이용해서 global하게 쓰기
 3. Ant-design에서 배운 방식 - 함수형으로 만들어 재활용하기
 ---
 
@@ -30,12 +30,12 @@ Modal을 쓰려는 페이지에 두고 버튼을 누르면 display 속성을 'no
 한 동안 이 방식을 애용했었죠. React로 넘어오면서는 중복을 줄이기 위해 컴포넌트화를 진행하고 ```props.isShow```로 키고 끄는 형태로 사용하게 됩니다.
 거기에 더해서 Modal을 최상단에 DOM 두기 위해 Portal을 사용하기도 했습니다.
 
-쓰려는 페이지마다 컴포넌트를 불러와서 props를 넘겨줘야 하고 그에 따른 state를 만들어줘야 됐지만, 크게 불편함을 느끼지 않고 사용해왔습니다.
+쓰려는 페이지마다 컴포넌트를 불러와서 props를 넘겨줘야 하고 그에 따른 state를 만들어줘서 계속해서 중복이 발생했지만, 크게 불편함을 느끼지 않고 사용해왔습니다.
 
 그러다가 Dooboolab이라는 곳에서 오픈소스 기여를하다가 한번의 전환점을 맞이하게 됩니다.
 
 ---
-## Hackatalk에서 배운 방식 - contextAPI와 ref를 이용해서 global하게 쓰기
+## Hackatalk에서 배운 방식 - context를 이용해서 global하게 쓰기
 
 Portal을 사용할 필요가 없고
 중복코드를 상당히 줄여주고
@@ -47,7 +47,7 @@ Portal을 사용할 필요가 없고
 
 Context API를 사용해 Modal ref를 주입하는 방식입니다. 
 
-핵심은 위와 같이 Context API를 만들고 showModal를 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
+핵심은 Modal 용 Context API를 만들고 모달을 여는 액션을 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
 
 
 ```js

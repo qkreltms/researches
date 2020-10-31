@@ -319,7 +319,7 @@ Redux Persist에는 여러가지 기능이 있습니다.
 
 # 3.1. Purge
                                       
-Storage에 저장된 데이터를 **삭제**하고 다른 값으로 초기화 할 수 있습니다.
+문서를 살펴보시면 PURGE라는 액션이 있습니다. 이 액션을 dispatch 함으로써 Storage에 저장된 데이터를 **삭제**하고 다른 값으로 초기화 할 수 있습니다.
 
 </br>
 
@@ -680,7 +680,7 @@ Application에서 오는 State 값:   { foo: initialFoo, bar: initialBar }
 
 # 3.3.3 autoMergeLevel2
 
-key가 같은 값도 오브젝트라면 덮어 씁니다. 나머지는 그대로 덮어씁니다.
+모든 state 값을 Application에서 오는 값으로 덮어씁니다.
 
 autoMergeLevel2.js
 ---
@@ -765,7 +765,7 @@ App.js
 
 이제 어떤 데이터를 저장할 것인지 저장하지 않을 것인지 구분해 프로젝트에 적용해보세요.   
 
-> 이 튜토리얼을 준비 할 수 있도록 도움을 주신 김대희님께 감사를 드립니다. 그리고, 이 강의를 검수해주신  한상진, 정민영, 배정환, 이창훈님께 감사드립니다.
+> 이 튜토리얼을 준비 할 수 있도록 도움을 주신 김대희님께 감사를 드립니다. 또한 이 강의를 검수해주신  정민영, 배정환, 이창훈 그리고 이미지를 제공해주신 한상진님께 감사드립니다.
 
 # 참조
 (1) https://blog.reactnativecoach.com/the-definitive-guide-to-redux-persist-84738167975
