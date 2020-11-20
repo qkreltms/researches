@@ -215,6 +215,9 @@ Ant-design 에서 Modal 코드만 빼온 예제를 구현하며 이와 관련된
 ---
 ## 예제
 
+Codesandbox라는 Web IDE를 사용하겠습니다.
+예제에 사용된 모든 코드는 [여기](https://codesandbox.io/s/mymodal-kw19e?file=/src/App.tsx)서 볼 수 있습니다.
+
 Codesandbox에서 React 세팅을 하고 Modal 컴포넌트는 간단히 Reactstrap에서 쓰는 걸로 대체하겠습니다.
 
 1. Codesandbox.io에 접속해 React + Typescript를 선택합니다.
