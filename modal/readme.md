@@ -208,9 +208,12 @@ export default function confirm(config: ModalFuncProps) {
 ```
 
 간단히 ```confirm()```을 호출하는 형식으로 켤 수 있습니다.
-Ant-design 에서 Modal 코드만 빼오면서 여러 기능을 살펴보겠습니다.
 
-이제 예제를 시작하겠습니다. 먼저,
+
+Ant-design 에서 Modal 코드만 빼온 예제를 구현하며 이와 관련된 여러 기능을 살펴보겠습니다.
+
+---
+## 예제
 
 Codesandbox에서 React 세팅을 하고 Modal 컴포넌트는 간단히 Reactstrap에서 쓰는 걸로 대체하겠습니다.
 
