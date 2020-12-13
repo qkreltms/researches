@@ -12,6 +12,7 @@ This is my personal researches of something what I interasted in.
 8. Tensorflow.js
 12. React-query PR 기여하기
 13. Web Assembly
+14. 우선순위큐 적용한 포트폴리오 만들기
 
 ## DONEs
 1. Test library/framework
