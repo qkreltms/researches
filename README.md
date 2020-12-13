@@ -9,13 +9,9 @@ This is my personal researches of something what I interasted in.
 3. Flux
 4. React (deeper structure)
 5. CI/CD tools
-6. Docker
-7. Storybook.js
 8. Tensorflow.js
-9. D3
-10. immer.js
-11. Three.js
-12. react-query
+12. React-query PR 기여하기
+13. Web Assembly
 
 ## DONEs
 1. Test library/framework
@@ -27,3 +23,5 @@ This is my personal researches of something what I interasted in.
 7. Javascript - var, let, const 차이점은?
 8. Javascript - Arrow Function
 9. React - 나의 Modal 컴포넌트 진화과정
+10. Storybook.js
+11. Immer.js
