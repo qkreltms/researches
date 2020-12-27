@@ -24,5 +24,3 @@ This is my personal researches of something what I interasted in.
 7. Javascript - var, let, const 차이점은?
 8. Javascript - Arrow Function
 9. React - 나의 Modal 컴포넌트 진화과정
-10. Storybook.js
-11. Immer.js
