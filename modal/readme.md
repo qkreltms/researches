@@ -216,7 +216,7 @@ Ant-design 에서 Modal 코드만 빼온 예제를 구현하며 이와 관련된
 ## 예제
 
 Codesandbox라는 Web IDE를 사용하겠습니다.
-예제에 사용된 모든 코드는 [여기](https://codesandbox.io/s/mymodal-kw19e?file=/src/App.tsx)서 볼 수 있습니다.
+예제에 사용된 모든 코드는 [여기](https://codesandbox.io/s/mymodal2-forked-iquih?file=/src/App.tsx)서 볼 수 있습니다.
 
 Codesandbox에서 React 세팅을 하고 Modal 컴포넌트는 간단히 Reactstrap에서 쓰는 걸로 대체하겠습니다.
 
@@ -232,22 +232,44 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 1. src/myModal.tsx 파일을 생성합니다.
 
-1. confirm 함수 코드를 작성합니다. 이 함수의 컨트롤러의 역할을 합니다.
+1. factory 함수 코드를 작성합니다. 이 함수의 컨트롤러 입니다.
+Modal 컴포넌트가 주어지면 삭제, 생성, 업데이트 등의 역할을 수행합니다. 
 ```js
-export const confirm = (config: ConfirmDialogProps = {}) => {
-  // div를 생성합니다.
+interface Factory {
+  Component?: any;
+  onClosed?: () => void;
+  onAfterClosed?: () => void;
+  [x: string]: any;
+}
+
+export const factory = ({ Component, ...config }: Factory) => {
   const div = document.createElement("div");
   document.body.appendChild(div);
-  let currentConfig: ConfirmDialogProps = { ...config, isVisible: true };
+  let currentConfig: Factory = {
+    ...config,
+    isVisible: true,
+    afterClose: () => {
+      if (typeof currentConfig.onAfterClose === "function") {
+        currentConfig.onAfterClose();
+      }
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      destroy(config);
+    }
+  };
 
-  const destroy = () => {
+  const destroy = ({ ...config }: Factory) => {
     const unmountResult = ReactDOM.unmountComponentAtNode(div);
     if (unmountResult && div.parentNode) {
       div.parentNode.removeChild(div);
     }
 
+    if (typeof config.onClosed === "function") {
+      config.onClosed();
+    }
+
     for (let i = 0; i < destroyFns.length; i += 1) {
       const fn = destroyFns[i];
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       if (fn === close) {
         destroyFns.splice(i, 1);
         break;
@@ -255,46 +277,49 @@ export const confirm = (config: ConfirmDialogProps = {}) => {
     }
   };
 
-  // 이 함수에서 Modal 컴포넌트를 렌더링 합니다.
-  const render = ({ ...props }: ConfirmDialogProps) => {
+  const render = ({ ...config }: Factory) => {
     setTimeout(() => {
-      // 위에서 미리 만든 div에 Modal 컴포넌트를 달아줍니다.
-      ReactDOM.render(<ConfirmDialog {...props} />, div);
+      return Component
+        ? ReactDOM.render(<Component {...config} />, div)
+        : new Error("test");
     });
   };
 
-  const update = (newConfig: ConfirmDialogProps) => {
-    currentConfig = {
+  const update = (newConfig: Factory) => {
+    config = {
       ...currentConfig,
       ...newConfig
     };
-    render(currentConfig);
+    render(config);
   };
 
   const close = () => {
-    currentConfig = {
+    const config = {
       ...currentConfig,
       isVisible: false,
-      afterClose: destroy
+      afterClose: () => {
+        if (typeof currentConfig.onAfterClose === "function") {
+          currentConfig.onAfterClose();
+        }
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        destroy(config);
+      }
     };
-    render(currentConfig);
+    render(config);
   };
 
-  // render 함수를 실행합니다.
   render(currentConfig);
 
   destroyFns.push(close);
 
   return {
-    close: destroy,
+    destroy: close,
     update
   };
 };
-
-export default confirm;
 ```
 
-1. Modal에 사용되는 state의 재활용을 위해서 hook을 하나 만들어줍니다.
+1. 공통적으로 모든 Modal에 사용되는 state의 재활용을 위해서 hook을 하나 만들어줍니다.
 ```js
 export const useModal = (
   isVisible = true
@@ -318,7 +343,6 @@ export const useModal = (
 
 1. 이제 Modal 컴포넌트를 만듭니다.
 ```js
-
 export interface ConfirmDialogProps {
   onClickOk?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onClickClose?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -326,6 +350,7 @@ export interface ConfirmDialogProps {
   isVisible?: boolean;
   isCloseOnClick?: boolean;
   message?: string;
+  title?: string;
   okText?: string;
   closeText?: string;
   contents?: (
@@ -352,6 +377,7 @@ export const ConfirmDialog = ({
   okText = "OK",
   closeText = "Close",
   message = "",
+  title = "",
   afterClose = () => {},
   onClickOk = (event: React.MouseEvent<HTMLButtonElement>) => {},
   onClickClose = (event: React.MouseEvent<HTMLButtonElement>) => {},
@@ -364,6 +390,7 @@ export const ConfirmDialog = ({
     closeText = "Close"
   }: ContentProps) => (
     <Modal isOpen={isOpen} onClosed={() => afterClose()}>
+      {title && <ModalHeader>{title}</ModalHeader>}
       <ModalBody>{message}</ModalBody>
       <ModalFooter>
         <button type="button" onClick={onClickOk}>
@@ -390,7 +417,6 @@ export const ConfirmDialog = ({
   };
   return (
     <div>
-      /* 받은 props를 그대로 contents에 넣어줍니다. */
       {contents({
         isOpen,
         onClickOk: onClickOkHandler,
@@ -420,8 +446,15 @@ export const destroyAll = () => {
 };
 ```
 
+1. 이제 factory에 컴포넌트를 넣어 export 해줍니다.
+```js
+export const confirm = (config: ConfirmDialogProps) =>
+  factory({ ...config, Component: ConfirmDialog });
+```
+
 1. 마지막으로 App.tsx에서 우리가 만든 Modal을 호출해보겠습니다.
 ```js
+import { confirm, destroyAll } from "./myModal";
 export default function App() {
   return (
     <div className="App">
@@ -433,7 +466,8 @@ export default function App() {
           confirm({ message: "1" });
           confirm({ message: "2" });
           destroyAll();
-          confirm({ message: "3" }).close();
+          confirm({ message: "3" }).destroy();
+          confirm({ message: "4" });
         }}
       >
         confirm
@@ -443,18 +477,44 @@ export default function App() {
 }
 ```
 
-위에 사용된 코드는 [여기](https://codesandbox.io/s/mymodal-kw19e?file=/src/App.tsx)서 볼 수 있습니다.
-
-1. 코드 재활용하기
-```contents```를 분리했으니 ```confirm()```에 값을 넣어 원하는 contents로 바꿀 수 있습니다. 예를 들어 버튼이 하나만 있는 warn 등이 있습니다.
+1. 다른 모달 만들기
+간결해 질 수 있던 코드였지만 재활용을 위해서 여기까지 왔습니다.
+지금까지 재활용 가능한 코드는 useModal, factory, 등 입니다.
+여기서 위에있던 코드를 다시 보겠습니다.
 ```js
-export function withWarn(props: ConfirmDialogProps): ConfirmDialogProps {
-  return {
-    contents: ...
-  };
-}
+export const confirm = (config: ConfirmDialogProps) =>
+  factory({ ...config, Component: ConfirmDialog });
+```
+factory에 파라메터 값을 넣어주면 변경이 가능하군요! 여기서 config는 Component에 props로 들어가는 값이라고 보시면 됩니다.
+확인/취소 버튼이 있는 ConfirmDialog를 변형해서 확인 버튼만 있는 warn을 만들어보겠습니다.
+```js
+export interface WithWarnConfig
+  extends Factory,
+    Pick<ConfirmDialogProps, "title" | "message"> {}
 
-export warn = confirm(withWarn)
+export const withWarn = (config: WithWarnConfig): ConfirmDialogProps => {
+  return {
+    ...config,
+    contents: (onClickClose, onClickOk, contentMessage) => (
+      <>
+        <ModalBody>{contentMessage}</ModalBody>
+        <ModalFooter style={{ justifyContent: "flex-end" }}>
+          <Button
+            style={{ width: "100px" }}
+            autoFocus
+            onClick={onClickOk}
+            onKeyDown={(e: any) =>
+              e.key === "enter" && onClickOk && onClickOk(e)
+            }
+            color="primary"
+          >
+            Confirm
+          </Button>
+        </ModalFooter>
+      </>
+    )
+  };
+};
 ```
 
 1. 하나의 모달 재활용하기 - update 활용
