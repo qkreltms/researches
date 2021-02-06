@@ -222,17 +222,17 @@ Codesandbox에서 React 세팅을 하고 Modal 컴포넌트는 간단히 Reactst
 
 1. Codesandbox.io에 접속해 React + Typescript를 선택합니다.
 
-1. reactstrap, @types/reactstrap을 설치합니다.
+2. reactstrap, @types/reactstrap을 설치합니다.
 
-1. index.tsx 파일에서 코드 한줄 추가합니다.
+3. index.tsx 파일에서 코드 한줄 추가합니다.
 
 ```js
 import "bootstrap/dist/css/bootstrap.min.css";
 ```
 
-1. src/myModal.tsx 파일을 생성합니다.
+4. src/myModal.tsx 파일을 생성합니다.
 
-1. factory 함수 코드를 작성합니다. 이 함수의 컨트롤러 입니다.
+5. factory 함수 코드를 작성합니다. 이 함수의 컨트롤러 입니다.
 Modal 컴포넌트가 주어지면 삭제, 생성, 업데이트 등의 역할을 수행합니다. 
 ```js
 interface Factory {
@@ -319,7 +319,7 @@ export const factory = ({ Component, ...config }: Factory) => {
 };
 ```
 
-1. 공통적으로 모든 Modal에 사용되는 state의 재활용을 위해서 hook을 하나 만들어줍니다.
+6. 공통적으로 모든 Modal에 사용되는 state의 재활용을 위해서 hook을 하나 만들어줍니다.
 ```js
 export const useModal = (
   isVisible = true
@@ -341,7 +341,7 @@ export const useModal = (
 };
 ```
 
-1. 이제 Modal 컴포넌트를 만듭니다.
+7. 이제 Modal 컴포넌트를 만듭니다.
 ```js
 export interface ConfirmDialogProps {
   onClickOk?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -431,7 +431,7 @@ export const ConfirmDialog = ({
 
 ```
 
-1. 모든 Modal을 닫을 수 있는 코드를 추가해줍니다.
+8. 모든 Modal을 닫을 수 있는 코드를 추가해줍니다.
 ```js
 
 export const destroyFns: Array<() => void> = [];
@@ -446,13 +446,13 @@ export const destroyAll = () => {
 };
 ```
 
-1. 이제 factory에 컴포넌트를 넣어 export 해줍니다.
+9. 이제 factory에 컴포넌트를 넣어 export 해줍니다.
 ```js
 export const confirm = (config: ConfirmDialogProps) =>
   factory({ ...config, Component: ConfirmDialog });
 ```
 
-1. 마지막으로 App.tsx에서 우리가 만든 Modal을 호출해보겠습니다.
+10. 마지막으로 App.tsx에서 우리가 만든 Modal을 호출해보겠습니다.
 ```js
 import { confirm, destroyAll } from "./myModal";
 export default function App() {
@@ -477,7 +477,7 @@ export default function App() {
 }
 ```
 
-1. 다른 모달 만들기
+11. 다른 모달 만들기
 간결해 질 수 있던 코드였지만 재활용을 위해서 여기까지 왔습니다.
 지금까지 재활용 가능한 코드는 useModal, factory, 등 입니다.
 여기서 위에있던 코드를 다시 보겠습니다.
@@ -517,5 +517,5 @@ export const withWarn = (config: WithWarnConfig): ConfirmDialogProps => {
 };
 ```
 
-1. 하나의 모달 재활용하기 - update 활용
+12. 하나의 모달 재활용하기 - update 활용
 ```confirm().update()```를 활용하면 업데이트된 props를 보냄으로써 재활용이 가능합니다. 
