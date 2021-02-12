@@ -1,16 +1,18 @@
 # 나의 Modal 컴포넌트 진화과정
 
 ## 목차
-1. Bootstrap에서 쓰는 방식
-2. Hackatalk에서 배운 방식 - context를 이용해서 global하게 쓰기
-3. Ant-design에서 배운 방식 - 함수형으로 만들어 재활용하기
+1. Bootstrap에서 배우다. - CSS 활용하기
+2. Hackatalk에서 배우다. - Context API를 이용해서 global하게 쓰기
+3. Ant-design에서 배우다. - ReactDOM.render()
+3.1. 예제
 ---
 
-## Bootstrap에서 쓰는 방식
+## 1. Bootstrap에서 배우다. - CSS 활용하기
 대학교 3학년 때 js에 첫 발을 내딛고 데이트 어플을 만들때였습니다.
+
 이 때는 React 없이 바닐라 js를 사용했고, 그 때는 Bootstrap이 대세였습니다. 
-이 때는 Modal을 어떻게 썼는지 볼까요?
-Bootstrap 공식홈페이지에서 가져온 예제 코드입니다.
+
+Modal 코드를 보겠습니다. Bootstrap 공식홈페이지에서 가져온 예제 코드입니다.
 
 ```html
 <!-- 트리거 버튼을 누르면 아래의 모달 컴포넌트가 디스플레이됩니다. -->
@@ -27,25 +29,31 @@ Bootstrap 공식홈페이지에서 가져온 예제 코드입니다.
 Modal을 쓰려는 페이지에 두고 버튼을 누르면 display 속성을 'none', 'block'으로 바꿔, 키고 끄는 형식입니다.
 
 
-한 동안 이 방식을 애용했었죠. React로 넘어오면서는 중복을 줄이기 위해 컴포넌트화를 진행하고 ```props.isShow```로 키고 끄는 형태로 사용하게 됩니다.
+한 동안 이 방식을 애용했습니다. 
+
+React를 쓰기 시작하면서 중복을 줄이기 위해 컴포넌트화를 진행하고 `props.isShow`로 키고 끄는 형태로 사용했습니다.
+
 거기에 더해서 Modal을 최상단에 DOM 두기 위해 Portal을 사용하기도 했습니다.
 
-쓰려는 페이지마다 컴포넌트를 불러와서 props를 넘겨줘야 하고 그에 따른 state를 만들어줘서 계속해서 중복이 발생했지만, 크게 불편함을 느끼지 않고 사용해왔습니다.
+여러 개선을 거쳤지만 단점이 있었습니다.
+`
+쓸 때 마다 컴포넌트를 불러와서 props를 넘겨줘야 하고 그에 따른 state를 만들어줘서 계속해서 중복이 발생했습니다.
+`
 
 그러다가 Dooboolab이라는 곳에서 오픈소스 기여를하다가 한번의 전환점을 맞이하게 됩니다.
 
 ---
-## Hackatalk에서 배운 방식 - context를 이용해서 global하게 쓰기
+## 2. Hackatalk에서 배우다. - Context API를 이용해서 global하게 쓰기
 
-Portal을 사용할 필요가 없고
-중복코드를 상당히 줄여주고
-함수형으로 호출이 가능하고 
-컴포넌트를 불러올 필요가 없습니다.
-
+```
+1. Portal을 사용할 필요가 없고
+2. 함수로 호출이 가능하고 
+3. 쓸 때마다 컴포넌트를 불러올 필요가 없어 중복코드를 상당히 줄였습니다.
+```
 
 그 방법은 바로...
 
-Context API를 사용해 Modal ref를 주입하는 방식입니다. 
+Context API를 사용하고 Modal의 ref를 global state에 주입하는 방식입니다. 
 
 핵심은 Modal 용 Context API를 만들고 모달을 여는 액션을 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
 
@@ -147,7 +155,6 @@ function RootNavigator(): ReactElement {
 }
 ```
 ```js
-
 // 이제 원하는 컴포넌트에 Provider로 액션을 전달하고 원하는 때에 액션을 dispatch 하면 됩니다. 
     <ProfileModalProvider>
       <RootComponent />
@@ -156,19 +163,18 @@ function RootNavigator(): ReactElement {
 
 이 코드를 이해하는데 시간이 좀 걸렸지만, 상당히 혁신적인 방법이라고 느꼈습니다. 특히, 함수로 호출이 가능하다는게 크게 다가왔죠. 
 
-이 방식을 배운다음에 바로 제가 참여중인 프로젝트에 이 방식을 적용했습니다. 덕분에 한동안은 잘 쓸수 있었죠.
+이 방식을 배운다음에 바로 제가 참여중인 실무 프로젝트에 이 방식을 적용했습니다. 덕분에 한동안은 잘 쓸수 있었죠.
 
-하지만 단점이 있습니다. 
-1. Context API또는 Redux/MobX를 사용해야하기 때문에 Modal을 사용하려면 Provider로 주입해 줘야한다는 점
-2. Modal 컴포넌트의 ref를 Store에 주입해줘야 한다는 점
-3. 하나의 Context API에서 사용된 Modal은 한번에 여러번 띄울수 없다는 점입니다. 
+하지만 여기에도 단점이 있습니다. 
+1. Context API 또는 Redux/MobX를 사용해야하기 때문에 Modal을 사용할 때마다 Provider로 주입해 줘야한다는 점
+2. 하나의 Context API에서 사용된 Modal은 한번에 여러번 띄울수 없다는 점입니다. 
 
-그러다가 어느날... 우연히 여러 오픈소스를 뜯어보다가 오늘 얘기하고 싶은, 더 혁신적인 방법을 찾게됩니다.
+그러다가 어느날... 우연히 여러 오픈소스 코드를 살펴보다가 오늘 얘기하고 싶은, 더 혁신적인 방법을 찾게됩니다.
 
 ---
-## Ant-design에서 배운 방식 - 함수로 만들어 재활용하기
+## 3. Ant-design에서 배우다. - ReactDOM.render()
 
-핵심은 ```ReactDOM.render``` 입니다.
+핵심은 ```ReactDOM.render()```을 사용해  생성한 div를 React Element로 만드는 부분 입니다.
 
 ```js
 export default function confirm(config: ModalFuncProps) {
@@ -213,12 +219,12 @@ export default function confirm(config: ModalFuncProps) {
 Ant-design 에서 Modal 코드만 빼온 예제를 구현하며 이와 관련된 여러 기능을 살펴보겠습니다.
 
 ---
-## 예제
+## 3.1. 예제
 
 Codesandbox라는 Web IDE를 사용하겠습니다.
 예제에 사용된 모든 코드는 [여기](https://codesandbox.io/s/mymodal2-forked-iquih?file=/src/App.tsx)서 볼 수 있습니다.
 
-Codesandbox에서 React 세팅을 하고 Modal 컴포넌트는 간단히 Reactstrap에서 쓰는 걸로 대체하겠습니다.
+Modal 컴포넌트와 스타일은 간단히 Reactstrap에서 쓰는 걸로 대체하고 컨트롤하는 부분만 작성하겠습니다.
 
 1. Codesandbox.io에 접속해 React + Typescript를 선택합니다.
 
@@ -233,7 +239,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 4. src/myModal.tsx 파일을 생성합니다.
 
 5. factory 함수 코드를 작성합니다. 이 함수의 컨트롤러 입니다.
-Modal 컴포넌트가 주어지면 삭제, 생성, 업데이트 등의 역할을 수행합니다. 
+
+    Modal 컴포넌트가 주어지면 삭제, 생성, 업데이트 등의 역할을 수행합니다. 
 ```js
 interface Factory {
   Component?: any;
@@ -248,6 +255,7 @@ export const factory = ({ Component, ...config }: Factory) => {
   let currentConfig: Factory = {
     ...config,
     isVisible: true,
+    // modal이 닫히면 afterClose()가 실행됩니다. 
     afterClose: () => {
       if (typeof currentConfig.onAfterClose === "function") {
         currentConfig.onAfterClose();
@@ -259,6 +267,7 @@ export const factory = ({ Component, ...config }: Factory) => {
 
   const destroy = ({ ...config }: Factory) => {
     const unmountResult = ReactDOM.unmountComponentAtNode(div);
+    // div가 unmounted 됐는지 확인합니다.
     if (unmountResult && div.parentNode) {
       div.parentNode.removeChild(div);
     }
@@ -281,7 +290,7 @@ export const factory = ({ Component, ...config }: Factory) => {
     setTimeout(() => {
       return Component
         ? ReactDOM.render(<Component {...config} />, div)
-        : new Error("test");
+        : new Error("컴포넌트가 없습니다.");
     });
   };
 
@@ -301,6 +310,7 @@ export const factory = ({ Component, ...config }: Factory) => {
         if (typeof currentConfig.onAfterClose === "function") {
           currentConfig.onAfterClose();
         }
+        // 모달이 닫히면 제거됩니다.
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         destroy(config);
       }
@@ -468,6 +478,7 @@ export default function App() {
           destroyAll();
           confirm({ message: "3" }).destroy();
           confirm({ message: "4" });
+          // 위 결과가 어떻게 될지 코드실행전 한번 예상해보세요.
         }}
       >
         confirm
@@ -477,16 +488,22 @@ export default function App() {
 }
 ```
 
-11. 다른 모달 만들기
+11. warn 모달 만들기
+
 간결해 질 수 있던 코드였지만 재활용을 위해서 여기까지 왔습니다.
 지금까지 재활용 가능한 코드는 useModal, factory, 등 입니다.
-여기서 위에있던 코드를 다시 보겠습니다.
+
+위에 있던 코드를 재활용 관점에서 다시 보겠습니다.
 ```js
 export const confirm = (config: ConfirmDialogProps) =>
   factory({ ...config, Component: ConfirmDialog });
 ```
-factory에 파라메터 값을 넣어주면 변경이 가능하군요! 여기서 config는 Component에 props로 들어가는 값이라고 보시면 됩니다.
-확인/취소 버튼이 있는 ConfirmDialog를 변형해서 확인 버튼만 있는 warn을 만들어보겠습니다.
+factory에 파라메터 값을 넣어주면 변경이 가능하군요! 
+
+여기서 config는 Modal Component에 props로 들어가는 값이라고 보시면 됩니다.
+확인/취소 버튼이 있는 ConfirmDialog를 변형해서
+
+ 확인 버튼만 있는 warn을 만들어보겠습니다.
 ```js
 export interface WithWarnConfig
   extends Factory,
@@ -516,6 +533,3 @@ export const withWarn = (config: WithWarnConfig): ConfirmDialogProps => {
   };
 };
 ```
-
-12. 하나의 모달 재활용하기 - update 활용
-```confirm().update()```를 활용하면 업데이트된 props를 보냄으로써 재활용이 가능합니다. 
