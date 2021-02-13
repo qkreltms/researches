@@ -97,6 +97,8 @@ http adapter의 마지막 줄의 `req.end(data);`를 보니 node의 http 라이�
 
 그러므로 xhr을 mocking할 수 있는 `axios-mock-dapter`를 사용했습니다.
 ```ts
+axios.defaults.adapter = require('axios/lib/adapters/xhr')
+
 mock.onPost("http://localhost:3333/").reply(function (config) {
   return { message: 'test' }
 });
