@@ -165,6 +165,9 @@ verdaccio에서 다운로드 받기
 
 [참고](https://github.com/mui-org/material-ui/tree/next/packages)
 
+# 최신 근황
+`nx`를 사용해 monorepo 구축이 쉬워질 것으로 생각됨
+[참고](https://github.com/nrwl/nx)
 # Special thanks to
 
 
