@@ -1,6 +1,7 @@
 # 공통 컴포넌트를 위한 분리
 
-우리가 만든 여러 프로젝트에서 공통으로 사용되는 컴포넌트들이 생겼다.
+프로젝트를 열심히 진행하다 보니 여러 프로젝트에서 공통으로 사용되는 컴포넌트들이 생겼고 
+한 곳에 모아서 관리를 하고 싶었습니다.
 
 그러므로 우리는 다른 ⛑엔지니어들에게 공통 컴포넌트를 분리하도록 지시했다.
 
@@ -27,7 +28,7 @@ tsconfig.json
 src/
     componenets/
         form/
-        button/
+        mega-size-chart/
         ...
     utils/
 webpack.config.json
@@ -36,18 +37,17 @@ babel.config.json
 ```
 
 # MultiRepo의 필요성
-위 구조에서 만약 button만 쓰고 싶다면
+위 구조에서 만약 mega-size-chart만 쓰고 싶다면
 별다른 방법이 없이 불필요한 나머지 컴포넌트 또한 다운받아 사용해야한다.
 
-만약 버튼의 용량이 커져서 또는 최소의 용량만으로 사용자에게 서비스를 제공하기위해서
-분리의 필요성이 생긴다면 button을 분리해야한다.
+만약 mega-size-chart의 용량 때문에 분리의 필요성이 생긴다면 분리해야한다.
 
-button만 쓰기 위해 각 컴포넌트들을 다시 분리했다면 아래와 같이 된다.
+mega-size-chart만 쓰기 위해 각 컴포넌트들을 다시 분리했다면 아래와 같이 된다.
 
 ```
-MyButton/
+MyMegaSizecChart/
     src/
-        button/
+        mega-size-chart/
     utils/
     webpack.config.json
     babel.config.json
@@ -62,7 +62,7 @@ MyForm/
 ...
 ```
 
-이제 button만 다운로드하여 쓸수 있다.🎉
+이제 mega-size-chart만 다운로드하여 쓸수 있다.🎉
 
 # Monorepo의 필요성
 이것이 끝이면 좋겠지만 우리의 엔지니어들은 중복을 최소화하기 위해 항상 노력한다.
@@ -74,7 +74,7 @@ MyForm/
 ```
 src/
     components/
-        button/
+        mega-size-chart/
         form/
     utils/
 webpack.config.json
@@ -91,7 +91,7 @@ tsconfig.json
 ```
 src/
     packages/
-        button/
+        mega-size-chart/
             webpack.config.json
             tsconfig.json
             package.json
@@ -118,7 +118,7 @@ tsconfig.json
 
 1. 패키지 하나 또는 모두를 배포하기 위해서는 해당 패키지의 경로로 접근해서 `npm publish`를 입력해야한다.
 
-2. 공통 라이브러리를 설치하기 위해 추가적으로 각 패키지 경로를 이동해 `npm link`와 같은 명령어를 입력해야한다.(link를 통해 라이브러리 중복을 해결할 수 있다.)
+2. 공통 라이브러리를 설치하기 위해 추가적으로 각 패키지 경로를 이동해 `npm link`와 같은 명령어를 입력해야한다.(link를 통해 root에만 library를 위치하고 바로가기를 씀으로 중복을 해결할 수 있다.)
 
 3. 모든 외부 패키지(__node_modules__)를 설치하고 싶다면 먼저 루트 폴더에서 `npm install`을 입력후 각 패키지 경로로 이동해 `npm install`과 `npm link`를 입력해야 한다.
 
@@ -135,11 +135,36 @@ Leran는 git, npm과 같은 패키지 매니저를 사용하기 편리하도록 
 
 모든 외부 패키지를 설치하고 싶다면 `npx lerna bootstrap`을 입력하면 된다.
 
-# MonoRepo 프로젝트 구축하기
+# Lerna 더 잘사용하기
+## `lerna create`
+package 생성
+## `lerna version`
+알아서 변경된 패키지 버전 올려주고 change log를 만들어준다. [참고](https://github.com/lerna/lerna/blob/main/CHANGELOG.md)
 
-# MonoRepo 사용하기
+## `lerna import`
+lerna 이전에 이미 존재했던 패키지의 커밋 히스토리를 그대로 lerna 프로젝트에 가져올 때 사용합니다.  
 
-# 다른 곳에서는 MonoRepo 어떻게 쓰나?
+## `lerna run`
+예:  `lerna run build`
+각 package의 script를 실행시킨다.
+
+## Verdaccio
+private npm 환경 만들기
+
+verdaccio에서 다운로드 받기
+`npm install <package> --registry 192.xxx.xxx.xxx:4873`
+
+주의!
+`npm set registry 192.xxx.xxx.xxx:4873`
+사용시 설치하는 모든 패키지 해당 ip 통해서 설치되고 만약 만든 프로젝트를 외부에 
+
+올려서 사용시 해당 주소를 찾을 수 없음
+# 다른 곳에서는 MonoRepo 어떻게 쓰고있을까?
+
+위의 중복된 webpack, tsconfig 설정 script/ 하위에서 관리
 
 [참고](https://github.com/mui-org/material-ui/tree/next/packages)
+
+# Special thanks to
+
 
