@@ -23,7 +23,7 @@ tsconfig.json
 공통 컴포넌트를 components/ 폴더에 하위에 넣어서 씁니다.
 
 ```js
-// ant-design이 위와 같은 구조로 되어있습니다.
+// ant-design이 아래와 같은 구조로 되어있습니다.
 src/
     componenets/
         form/
@@ -149,9 +149,9 @@ Leran는 git, npm과 같은 패키지 매니저를 사용하기 편리하도록 
 
 그러면 아래와 같은 일이 벌어집니다.
 ```
+(요약)
 1. 각 패키지를 순회합니다.
 2. 마지막 릴리스 이후 업데이트 된 패키지를 배포합니다.
-
 ```
 
 공통 라이브러리를 설치하고 싶다면 `npx lerna add <package>`
@@ -172,7 +172,7 @@ lerna 이전에 이미 존재했던 패키지의 커밋 히스토리를 그대�
 
 ex: `lerna run test`
 
-# Private registry 만들기
+# Private registry
 ## Verdaccio
 verdaccio에서 다운로드 받기
 `npm install <package> --registry 192.xxx.xxx.xxx:4873`
@@ -191,6 +191,6 @@ verdaccio에서 다운로드 받기
 # 최신 근황
 `nx`를 사용하면 monorepo 구축이 쉬워질 것으로 생각됩니다.
 [참고](https://github.com/nrwl/nx)
-# Special thanks to
+
 
 
