@@ -165,14 +165,15 @@ function RootNavigator(): ReactElement {
 
 하지만 여기에도 단점이 있습니다. 
 1. Context API 또는 Redux/MobX를 사용해야하기 때문에 Modal을 사용할 때마다 Provider로 주입해 줘야한다는 점
-2. 하나의 Context API에서 사용된 Modal은 한번에 여러번 띄울수 없다는 점입니다. 
+2. 하나의 Context API에서 사용된 Modal은 한번에 여러번 띄울수 없다는 점.
+3. Modal을 쓸 때마다 상위 트리에 컴포넌트를 위치하고 Context API코드를 구현하는 등의 보일러플레이트가 존재한다는 점입니다.
 
 그러다가 어느날... 우연히 여러 오픈소스 코드를 살펴보다가 오늘 얘기하고 싶은, 더 혁신적인 방법을 찾게됩니다.
 
 ---
 ## 3. Ant-design에서 배우다. - ReactDOM.render()
 
-핵심은 ```ReactDOM.render()```을 사용해  생성한 div를 React Element로 만드는 부분 입니다.
+핵심은 ```ReactDOM.render()```을 사용해 동적으로 컴포넌트를 생성합니다.
 
 ```js
 export default function confirm(config: ModalFuncProps) {
