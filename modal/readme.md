@@ -2,9 +2,8 @@
 
 ## 목차
 1. Bootstrap에서 배우다. - CSS 활용하기
-2. Hackatalk에서 배우다. - Context API를 이용해서 global하게 쓰기
+2. Hackatalk에서 배우다. - Context API
 3. Ant-design에서 배우다. - ReactDOM.render()
-3.1. 예제
 ---
 
 ## 1. Bootstrap에서 배우다. - CSS 활용하기
@@ -43,19 +42,18 @@ React를 쓰기 시작하면서 중복을 줄이기 위해 컴포넌트화를 �
 그러다가 Dooboolab이라는 곳에서 오픈소스 기여를하다가 한번의 전환점을 맞이하게 됩니다.
 
 ---
-## 2. Hackatalk에서 배우다. - Context API를 이용해서 global하게 쓰기
+## 2. Hackatalk에서 배우다. - Context API
 
 ```
 1. Portal을 사용할 필요가 없고
 2. 함수로 호출이 가능하고 
-3. 쓸 때마다 컴포넌트를 불러올 필요가 없어 중복코드를 상당히 줄였습니다.
+3. 한번의 ref주입 후 쓸 때마다 컴포넌트를 불러올 필요가 없어 중복코드를 상당히 줄였습니다.
 ```
 
-그 방법은 바로...
+앞서 얘기했던 css의 Modal을 Context API안으로 옮겼다고 보면 됩니다. 
+Modal 용 Context API를 만들고 그 안에 modal state를 만들어 ref를 주입합니다.
+그 후 props로 state를 하나 넘겨 열고 닫습니다.
 
-Context API를 사용하고 Modal의 ref를 global state에 주입하는 방식입니다. 
-
-핵심은 Modal 용 Context API를 만들고 모달을 여는 액션을 dispatch해주면 주입한 state.modal이 열리는 형식입니다.
 
 
 ```js
