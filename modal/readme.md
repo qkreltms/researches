@@ -166,7 +166,7 @@ function RootNavigator(): ReactElement {
 하지만 여기에도 단점이 있습니다. 
 1. Context API 또는 Redux/MobX를 사용해야하기 때문에 Modal을 사용할 때마다 Provider로 주입해 줘야한다는 점
 2. 하나의 Context API에서 사용된 Modal은 한번에 여러번 띄울수 없다는 점.
-3. Modal을 쓸 때마다 상위 트리에 컴포넌트를 위치하고 Context API코드를 구현하는 등의 보일러플레이트가 존재한다는 점입니다.
+3. Modal의 코드를 한 곳에 모아놓고 사용하고 싶지만 Modal을 쓸 때마다 상위 트리에 컴포넌트를 위치시키고 Context API코드를 구현하는 등의 작업을해 코드가 분산됩니다. 
 
 그러다가 어느날... 우연히 여러 오픈소스 코드를 살펴보다가 오늘 얘기하고 싶은, 더 혁신적인 방법을 찾게됩니다.
 
