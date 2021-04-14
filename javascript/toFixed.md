@@ -89,29 +89,127 @@ v.에 따라 `m = '50.6`'이 되고
 
 # 2. 왜 이러한 알고리즘일까?
 
-간단 요약: 무한한 real number가 유한한 기계에서 표현해야 하기 때문에. 
-
-예를 들어
-
-[https://www.youtube.com/watch?v=vOO-oLS0H68](https://www.youtube.com/watch?v=vOO-oLS0H68)
-
-0.1 ⇒ binary, real number
+간단 요약: 무한한 real number를 유한한 기계에서 표현해야 하기 때문에. 
 
 32비트, 64비트에 따라 영역이 제한됨
 
 메모리에 표시할 수 있는 한계가 있다. 
 
-그래서 어떻게 표현할까?
+real number를 어떻게 표현할까?
 
-# 컴퓨터의 부동 소수점 표현 방식
+# 잠깐 알아보자 컴퓨터의 부동 소수점 표현 방식
 
-Fixed Point & Floating Point
+2진수로 이해한다.
+
+10진수 ⇒ 2진수 변환과정
+
+13, 13/2 ⇒ 6...1, 6/2 ⇒ 3 ...0, 3/2 ⇒ 1...1
+
+ = 1101
+
+0.75 , 0.75 * 2 ⇒ 1.50...1, 0.5 * 2 ⇒  
+
+ = 0.11
+
+263.3?
+
+236 ⇒ 100000111
+
+0.3 => 0.01001100110011......(0011)
 
 Fixed Point
 
+정수를 표현하는 비트 수와 소수를 표현하는 비트 수를 미리 정해 놓고 해당 비트 만큼만 표시
+
+32bit에서 263.3은 (부호 1bit, 정수 16bit, 소수 15bit)
+
+(0)0000000100000111.010011001100110
+
+정수, 소수 표시 영역이 고정이라 정수가 커야 될 때 정수 영역에서만 표현가능, 큰 소수가 필요할 때 정해진 소수 영역 만큼만 표시 가능
+
 Floating Point
 
-[https://corona-world.tistory.com/18](https://corona-world.tistory.com/18)
+IEEE 754 32bit에서 (부호 1bit, 지수 8bit, 가수 23bit)
+
+263.3은
+
+소수점을 맨 앞 1 뒤로 이동(이 때문에 부동 소수점이라 불린다.)
+
+100000111.010011001100110... ⇒ 1.00000111010011001100110... * 2^8
+
+2^8의 8을 지수라고 하고 하늘색 부분에 기록합니다. (IEEE 754 표현 방식에서는 127 + 지수를 기록합니다.)
+
+소수점 이후 숫자 열 전체를 가수라고 하고 연두색 부분에 기록합니다.
+
+sign bit= 0(양수)
+
+8exp bit =10000111 (127(01111111) + 8(1000) = 135)
+
+fraction bits = 00000111010011001100110
+
+고정 소수점에 비교해서 더 정확해졌지만 0.3을 다 나타낼 수는 없다.
+
+10진수로 나타내 보면 0.29998779296875을 나타냅니다.
+
+bias를 더하는 이유? 2의 보수
+
+컴퓨터 내부는 가산기(Adder)을 통해서 계산 뺄셈은 보수를 통해서 계산한다.
+
+1의 보수: 주어진 비트를 반전 시킨 후 
+
+1의 보수 뺼셈
+
+주어진 비트를 반전 시킨 후 최상위 비트에서 자리올림이 생겼다면 최하위에 1을 더하고, 생기지 않았다면 연산결과에 1의 보수를 구한 후 - 부호를 붙인다.
+
+111(7)
+
+-110(6)
+
+⇒ 111 + 001 ⇒ 1000 ⇒ 001 ⇒ 1
+
+100(4) - 110(6)
+
+⇒ 100 - 001 ⇒ 101 ⇒ 010 ⇒ 2
+
+2의 보수: 1의 보수에 1을 더한다
+
+2의 보수 뺄셈
+
+0011(3)
+
+1110(-2)
+
+0001(1)
+
+excess-k
+
+k = 8일 때
+
+![table.png](table.png)
+
+참고: [https://en.wikipedia.org/wiki/Offset_binary](https://en.wikipedia.org/wiki/Offset_binary)
+
+127?
+
+지수는 (-, +값이 있는 부호 값)signed 값이 되어야함 -126~127
+
+127을 더해주면 적절하게 저 범위를 유지할 수 있다.
+
+[https://www.youtube.com/watch?v=vi5RXPBO-8E](https://www.youtube.com/watch?v=vi5RXPBO-8E)
+
+64bit 일 때 bias = 1023
+
+0.1 ⇒ 0011 1111 1111.00011001...
+
+1.2 ⇒ 0100 0000 0000.001100...
+
+10.3 ⇒ 0100 0000 0001.01001.... 
+
+해당 비트 문자열을 부호없는 정수로 해석하고 해당 정수를 비교하여 해당 비트 문자열을 사 전적으로 또는 동등하게 비교가 쉽다 two complements에 비해서.
+
+excess-8 표 보면 딱 와닿음
+
+두 개의 실수를 계산해보자
 
 소수점 계산 방법
 
@@ -140,7 +238,9 @@ Floating Point
 - 나눗셈이 안전한지 검사하는데 문제가 생김: 제수(나눗수)가 0이 아님을 검사하는 것이 나눗셈이 오버플로되고 무한대값이 되지 않는 걸 보장하지 않는다.
 - 같음을 검사하는데 문제가 생김: 수학적으로 같은 계산결과가 나오는 두 계산 순서가 다른 부동소수점 값을 만들어낼 수 있다. 프로그래머는 어느정도의 허용 오차를 가지고 비교를 수행하지만, 그렇다고 해서 문제가 완전히 없어지지 않는다.
 
-**IEEE 754에서 위와 같은 문제를 다룰 수 있도록 표준화를 했다.**
+**IEEE 754에서 위와 같은 문제를 다루면서 부동 소수점을 표현할 수 있도록 표준화 했다.**
+
+구체적으로는 모르겠지만 소수점 표현 방식 때문에 소수점은 tie-breaking 규칙이 필요하다 2개가 나올 때 하나 선택해 됨
 
 *JS 뿐만아니라 Python3의 경우도 같은 결과를 내놓습니다.
 
@@ -178,7 +278,9 @@ decimal.js
 
 # 결론
 
-github에서 chrome 코드를 살펴본 결과 grisu3 알고리즘 등과 같이 float을 어떻게 보여줄 것 인가에 대한 코드가 많음 결과적으로 주어진 값의 크기에 따라 특정한 알고리즘을 적용하여 구현했다. 성능을 지키면서 정확도를 지키기위한 것으로 보임
+(chrome 소스 코드 까본것은 언급만하자)
+
+chrome 코드를 살펴본 결과 grisu3 알고리즘 등과 같이 float을 어떻게 보여줄 것 인가에 대한 코드가 많음 결과적으로 주어진 값의 크기에 따라 특정한 알고리즘을 적용하여 구현했다. 성능을 지키면서 정확도를 지키기위한 것으로 보임
 
 추가적으로 정수를 string으로 변환할때 toString보다는 toFixed가 정확하다.
 
@@ -186,6 +288,103 @@ github에서 chrome 코드를 살펴본 결과 grisu3 알고리즘 등과 같이
 (1000000000000000128).toString() // **"1000000000000000100"**
 (1000000000000000128).toFixed(0) // **"1000000000000000128"**
 ```
+
+# 도움을 주신 분들
+
+---
+
+불필요한 부분(?)
+
+# 어떠한 원리로 되어있길래? (HOW)
+
+# ? (ReturnIfAbrupt)
+
+> 1. Let hygienicTemp be AbstractOperation().
+2. If hygienicTemp is an abrupt completion, return hygienicTemp.
+3. Else if hygienicTemp is a Completion Record, set hygienicTemp to hygienicTemp.[[Value]].
+
+hygienicTemp ⇒ 변수로 이해hygienicTemp ⇒ 변수로 이해
+
+1. 어떤 변수에 함수를 담는다.
+2. 변수가 abrupt completion(갑작스런 완료)라면, 매개변수를 반환한다.
+3. 만약 변수가 Completion Record라면 변수를  어떤 ECMAScript Language Types 또는 빈 값의만약 변수가 Completion Record라면 변수를  어떤 ECMAScript Language Types 또는 빈 값의 변수로 설정한다(?) 
+
+[[Value]]: [https://tc39.es/ecma262/#sec-property-attributes](https://tc39.es/ecma262/#sec-property-attributes)
+
+대략 어떤 작업을 시작하거나 변수를 반환한다.
+
+# Abrupt completion
+
+The term “abrupt completion” refers to any completion with a [[Type]] value other than normal.
+
+```cpp
+Handle<Object> value = args.at(0);
+  Handle<Object> fraction_digits = args.atOrUndefined(isolate, 1);
+
+  // Unwrap the receiver {value}.
+  if (value->IsJSPrimitiveWrapper()) {
+    value = handle(Handle<JSPrimitiveWrapper>::cast(value)->value(), isolate);
+  }
+  if (!value->IsNumber()) {
+    THROW_NEW_ERROR_RETURN_FAILURE(
+        isolate, NewTypeError(MessageTemplate::kNotGeneric,
+                              isolate->factory()->NewStringFromAsciiChecked(
+                                  "Number.prototype.toFixed"),
+                              isolate->factory()->Number_string()));
+  }
+  double const value_number = value->Number();
+```
+
+대략 AbstractOperation()이 true면 계속 진행하고  throw, return 등 하라는 소리
+
+# Completion Record
+
+데이터 전파와 제어 흐름을 설명할 때 쓰이는 테이블 
+
+[https://tc39.es/ecma262/#sec-completion-record-specification-type](https://tc39.es/ecma262/#sec-completion-record-specification-type)
+
+# !
+
+Similarly, prefix **`!`** is used to indicate that the following invocation of an abstract or syntax-directed operation will never return an [abrupt completion](https://tc39.es/ecma262/#sec-completion-record-specification-type) and that the resulting [Completion Record](https://tc39.es/ecma262/#sec-completion-record-specification-type)'s [[Value]] field should be used in place of the return value of the operation. For example, the step:
+
+1. 1. Let val be ! OperationName().
+
+is equivalent to the following steps:
+
+1. 1. Let val be OperationName().
+2. 2. [Assert](https://tc39.es/ecma262/#assert): val is never an [abrupt completion](https://tc39.es/ecma262/#sec-completion-record-specification-type).
+3. 3. If val is a [Completion Record](https://tc39.es/ecma262/#sec-completion-record-specification-type), set val to val.[[Value]].
+
+Syntax-directed operations for [runtime semantics](https://tc39.es/ecma262/#sec-runtime-semantics) make use of this shorthand by placing **`!`** or **`?`** before the invocation of the operation:
+
+1. 1. Perform ! SyntaxDirectedOperation of *NonTerminal*.
+
+어떤 조건에 맞을 때만 실행하고 아니라면 변수를 반환하라
+
+코드 발췌
+
+```cpp
+if (std::isinf(value_number)) {
+    return (value_number < 0.0) ? ReadOnlyRoots(isolate).minus_Infinity_string()
+                                : ReadOnlyRoots(isolate).Infinity_string();
+  }
+```
+
+# V8, toFixed 구현
+
+[https://github.com/v8/v8/blob/dc712da548c7fb433caed56af9a021d964952728/src/builtins/builtins-number.cc](https://github.com/v8/v8/blob/dc712da548c7fb433caed56af9a021d964952728/src/builtins/builtins-number.cc)
+
+# Why?
+
+```jsx
+a. Let n be an integer for which n / 10f - x is as close to zero as possible.
+```
+
+위의 문구를 어떻게 구현했는지 모르겠음, but
+
+살펴본 결과 grisu3 알고리즘 등과 같이 float을 어떻게 보여줄 것 인가에 대한 코드가 많음
+
+결과적으로 성능을 위해 정확도를 포기한 것으로 보이고
 
 참고: [https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary/12830454#12830454](https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary/12830454#12830454)
 
@@ -200,3 +399,13 @@ github에서 chrome 코드를 살펴본 결과 grisu3 알고리즘 등과 같이
 [https://en.wikipedia.org/wiki/Catastrophic_cancellation](https://en.wikipedia.org/wiki/Catastrophic_cancellation)
 
 [https://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero](https://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero)
+
+[https://steemit.com/kr/@modolee/floating-point](https://steemit.com/kr/@modolee/floating-point)
+
+[https://www.youtube.com/watch?v=8afbTaA-gOQ](https://www.youtube.com/watch?v=8afbTaA-gOQ)
+
+[https://ko.wikipedia.org/wiki/IEEE_754](https://ko.wikipedia.org/wiki/IEEE_754)
+
+[https://corona-world.tistory.com/18](https://corona-world.tistory.com/18)
+
+[https://stackoverflow.com/questions/19864749/why-do-we-bias-the-exponent-of-a-floating-point-number/67089215#67089215](https://stackoverflow.com/questions/19864749/why-do-we-bias-the-exponent-of-a-floating-point-number/67089215#67089215)
