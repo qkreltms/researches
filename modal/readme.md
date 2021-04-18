@@ -1,4 +1,5 @@
 # 나의 Modal 컴포넌트 진화과정
+NOTE: [여기](https://haragoo30.medium.com/%EB%82%98%EC%9D%98-modal-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EC%A7%84%ED%99%94%EA%B3%BC%EC%A0%95-c1bd2a8b9db0?postPublishedType=repub)에서 최신화된 블로그를 보실 수 있습니다.
 
 ## 목차
 1. Bootstrap에서 배우다. - CSS 활용하기
