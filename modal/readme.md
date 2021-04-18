@@ -4,12 +4,13 @@
 1. Bootstrap에서 배우다. - CSS 활용하기
 2. Hackatalk에서 배우다. - Context API
 3. Ant-design에서 배우다. - ReactDOM.render()
+3.1 
 ---
 
 ## 1. Bootstrap에서 배우다. - CSS 활용하기
-대학교 3학년 때 js에 첫 발을 내딛고 데이트 어플을 만들때였습니다.
+대학교 3학년 때 js에 첫발을 내디고고 데이트 웹을 만들때였습니다.
 
-이 때는 React 없이 바닐라 js를 사용했고, 그 때는 Bootstrap이 대세였습니다. 
+그 때는 React 없이 바닐라 js를 사용했고, Bootstrap이 대세였습니다. 
 
 Modal 코드를 보겠습니다. Bootstrap 공식홈페이지에서 가져온 예제 코드입니다.
 
@@ -34,9 +35,9 @@ React를 쓰기 시작하면서 중복을 줄이기 위해 컴포넌트화를 �
 
 거기에 더해서 Modal을 최상단에 DOM 두기 위해 Portal을 사용하기도 했습니다.
 
-여러 개선을 거쳤지만 단점이 있었습니다.
+여러 개선을 거쳤지만, 단점이 있었습니다.
 `
-쓸 때 마다 컴포넌트를 불러와서 props를 넘겨줘야 하고 그에 따른 state를 만들어줘서 계속해서 중복이 발생했습니다.
+쓸때 마다 컴포넌트를 불러와서 props를 넘겨줘야 하고 그에 따른 state를 만들어줘서 계속해서 중복이 발생했습니다.
 `
 
 그러다가 Dooboolab이라는 곳에서 오픈소스 기여를하다가 한번의 전환점을 맞이하게 됩니다.
@@ -50,9 +51,8 @@ React를 쓰기 시작하면서 중복을 줄이기 위해 컴포넌트화를 �
 3. 한번의 ref주입 후 쓸 때마다 컴포넌트를 불러올 필요가 없어 중복코드를 상당히 줄였습니다.
 ```
 
-앞서 얘기했던 css의 Modal을 Context API안으로 옮겼다고 보면 됩니다. 
 Modal 용 Context API를 만들고 그 안에 modal state를 만들어 ref를 주입합니다.
-그 후 props로 state를 하나 넘겨 열고 닫습니다.
+그 후 props로 state를 하나 넘겨 닫습니다.
 
 
 
@@ -161,12 +161,12 @@ function RootNavigator(): ReactElement {
 
 이 코드를 이해하는데 시간이 좀 걸렸지만, 상당히 혁신적인 방법이라고 느꼈습니다. 특히, 함수로 호출이 가능하다는게 크게 다가왔죠. 
 
-이 방식을 배운다음에 바로 제가 참여중인 실무 프로젝트에 이 방식을 적용했습니다. 덕분에 한동안은 잘 쓸수 있었죠.
+이 방식을 배운다음에 바로 제가 참여중인 실무 프로젝트에 이 방식을 적용했습니다. 덕분에 한동안은 잘 쓸 수 있었죠.
 
 하지만 여기에도 단점이 있습니다. 
-1. Context API 또는 Redux/MobX를 사용해야하기 때문에 Modal을 사용할 때마다 Provider로 주입해 줘야한다는 점
-2. 하나의 Context API에서 사용된 Modal은 한번에 여러번 띄울수 없다는 점.
-3. Modal의 코드를 한 곳에 모아놓고 사용하고 싶지만 Modal을 쓸 때마다 상위 트리에 컴포넌트를 위치시키고 Context API코드를 구현하는 등의 작업을해 코드가 분산됩니다. 
+1. Context API, Redux 또는 MobX 같은 전역 store를 사용해야 하기 때문에 Modal을 사용할 때마다 Provider로 주입해 줘야 한다는 점
+2. 하나의 Context API에서 사용된 Modal은 한번에 여러 번 띄울 수 없다는 점.
+3. Modal의 코드를 한곳에 모아놓고 사용하고 싶지만, Modal을 쓸 때마다 상위 DOM에 컴포넌트를 위치시키고 Context API코드를 구현하는 등의 작업을 해 코드가 분산됩니다. 
 
 그러다가 어느날... 우연히 여러 오픈소스 코드를 살펴보다가 오늘 얘기하고 싶은, 더 혁신적인 방법을 찾게됩니다.
 
@@ -239,7 +239,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 5. factory 함수 코드를 작성합니다. 이 함수의 컨트롤러 입니다.
 
-    Modal 컴포넌트가 주어지면 삭제, 생성, 업데이트 등의 역할을 수행합니다. 
+    Modal 컴포넌트가 주어지면 삭제, 생성,  등의 역할을 수행합니다. 
 ```js
 interface Factory {
   Component?: any;
@@ -461,7 +461,7 @@ export const confirm = (config: ConfirmDialogProps) =>
   factory({ ...config, Component: ConfirmDialog });
 ```
 
-10. 마지막으로 App.tsx에서 우리가 만든 Modal을 호출해보겠습니다.
+10. 마지막으로 App.tsx에서 우리가 만든 Modal을 호출해 보겠습니다.
 ```js
 import { confirm, destroyAll } from "./myModal";
 export default function App() {
@@ -486,10 +486,13 @@ export default function App() {
   );
 }
 ```
+여기까지가 끝입니다.
 
-11. warn 모달 만들기
+*One more thing...
 
-간결해 질 수 있던 코드였지만 재활용을 위해서 여기까지 왔습니다.
+warn 모달 만들기
+
+간결해질 수 있었던 코드지만 재활용을 위해서 여기까지 왔습니다.
 지금까지 재활용 가능한 코드는 useModal, factory, 등 입니다.
 
 위에 있던 코드를 재활용 관점에서 다시 보겠습니다.
@@ -533,4 +536,4 @@ export const withWarn = (config: WithWarnConfig): ConfirmDialogProps => {
 };
 ```
 
-여기까지입니다. 이제 여러분의 Modal을 만들어보세요!🎈🎈
+여기까지입니다. 이제 여러분의 Modal을 만들어보세요~🎈🎈
