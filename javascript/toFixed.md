@@ -1,4 +1,5 @@
 # 50.65.toFixed(1) = 50.6(????)
+## @deprecated 이 글은 [여기](https://haragoo30.medium.com/50-65-tofixed-1-50-6-b8f837b7cdc8?postPublishedType=repub)로 이전됐습니다.
 
 toFixed를 사용하다가 예상치 못한 결과를 맞닥뜨렸다.
 
