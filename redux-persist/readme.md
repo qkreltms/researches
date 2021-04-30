@@ -1,4 +1,5 @@
 # Redux Persist를 소개합니다.
+@deprecated https://medium.com/p/94cb7c8d7020/edit 로 옮겼습니다.
 
 ![Redux Persist Thumbnail](https://user-images.githubusercontent.com/25196026/81137268-2dd62a80-8f99-11ea-9b02-91488fc52111.jpg)
 
