@@ -43,9 +43,7 @@ link 또는 script tag를 만나면 각각의 파일을 네트워크 통신으�
 
 이 때에 만약 script를 2개 이상 불러온다면 첫 script를 읽고 데이터를 가져오고 js가 실행된 후 그 다음 script 데이터를 가져오고 js를 실행하게 된다. 이렇게 되면 대기 시간이 너무 길어지게 되기때문에 브라우저는 Preload Scanner을 사용한다.
 
-js가 실행되기까지 parser blocking이 되는 중이라도 Preload Scanner가 다음 줄을 계속해서 읽으며 script, style, 이미지 등의 데이터를 네트워크 통신으로 가져온다.
-
-그렇기 때문에 각각의 데이터를 한번에 전부 가져온다. 즉, 한번의 라운드 트립으로 가져온다.
+js가 실행되기까지 parser blocking이 되는 중이라도 Preload Scanner가 다음 줄을 계속해서 읽으며 script, style, 이미지 등의 데이터를 네트워크 통신으로 가져온다. 이때 최소 라운드 트립은 1회이다.
 
 특정한 상황에서만 link를 통해 style을 불러올 수 도있다. 바로 media query를 쓰는 것이다.
 ```html
