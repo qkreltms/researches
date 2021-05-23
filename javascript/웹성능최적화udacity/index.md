@@ -39,7 +39,22 @@ DOM 구조를 만들면서
 
 link 또는 script tag를 만나면 각각의 파일을 네트워크 통신으로 가져온다. 
 
-이후에 구체적으로 설명할 내용이지만 js는 parser blocking이다. 즉, HTML parse가 진행되다가 js를 읽는 순간 js가 실행되기 까지 HTML parse 과정을 잠시 멈춘다. 
+이후에 구체적으로 설명할 내용이지만 js는 parser blocking이다. 즉, HTML parse가 진행되다가 js를 읽는 순간 CSSOM이 생성되기까지 HTML parse 과정을 잠시 멈춘다. 
+```html
+<html>
+ <head></head>
+ <body>
+   <p>
+   <span>Hello</span>
+   <script>
+     // 여기서 Hello span을 가져와서 어떤 작업을 수행이 가능하다...
+     // 하지만 World div를 가져와서 어떤 작업을 수행할 수 없다. null이 오기 때문
+   </script>
+   <div>World</div>
+   </p>
+ </body>
+</html>
+```
 
 이 때에 만약 script를 2개 이상 불러온다면 첫 script를 읽고 데이터를 가져오고 js가 실행된 후 그 다음 script 데이터를 가져오고 js를 실행하게 된다. 이렇게 되면 대기 시간이 너무 길어지게 되기때문에 브라우저는 Preload Scanner을 사용한다.
 
@@ -73,7 +88,16 @@ img { float: right }
 
 ![CSSOM](cssom.png)
 
-### 6. Render Tree(DOM과 CSSOM 병합하기)
+## JS
+js는 DOM과 CSSOM을 조작가능하다. Parser blocking이다.
+
+Parser blocking 해결방법
+1. body아래에 script tag를 놓는다.
+1. defer 속성: 스크립트 다운로드가 HTML parsing에 방해되지  않는다, JS 실행은 페이지 구성이 끝날 때까지 지연된다.
+1. async 속성: defer와 비슷하지만, 스크립트 다운로드가 끝나면 바로 실행된다.
+1. window.onload 를 사용한다.
+
+## 6. Render Tree(DOM과 CSSOM 병합하기)
 
 이제 생성된 DOM과 CSSOM을 병합한다.
 
@@ -97,3 +121,47 @@ layer에 픽셀화를 진행한다. Paint는 여러 layer에 나눠서 진행될
 
 ## Composite Layers
 여러 layer에서 그린 것을 하나로 합친다.
+
+# 용어 정리
+## 1. FCP(First Contentful Patint)
+페이지가 로딩을 시작해서 어떤 콘텐츠(텍스트, 이미지, svg, canvas, 등)가 화면에 보이기 시작할 때를 가리킴
+## 1. LCP(Largest Contentful Paint)
+가장 사이즈가 큰 컨텐츠가 렌더링 되는 시간(img, svg, video, url(). text nodes)
+
+사이즈는 용량이 아닌 viewport에 보여지는 고유 너비, 높이(maring, padding은 포함되지 않음)
+
+LCP가 가장 중요한 컨텐츠는 아니다.
+
+## 1. FID(First Input Delay)
+유저가 처음 페이지와 인터렉션 하고 응답이 오는 시간
+
+예: 링크 클릭, 단 줌인아웃, 스크롤링을 판별대상이 아님
+
+이벤트 리스너가 붙지 않아도 측정된다.
+
+대상: <input>, <textarea>, <select>, <a>, etc
+
+왜 신경써야 하는가? => 유저의 첫 인상을 결정짓는다.
+
+## 1. TTI(Time To Interactive)
+페이지가 완전히 상호작용(interactive) 가능하기까지 얼마나 걸리는지 측정
+
+페이지가 완전히 상호작용 가능한지 다음의 방법으로 안다.
+1. FCP가 존재하고
+2. 페이지의 보이는 부분에 이벤트 헨들러가 등록됐고
+3. 페이지가 유저 인터렉션에 50ms 안에 반응할 때 
+
+## 1. TBT(Total Blocking Time)
+
+
+## 성능 최적화 방법
+
+## Chrome dev tools으로 성능 최적화하기
+https://developer.chrome.com/docs/devtools/evaluate-performance/reference/
+
+https://developer.chrome.com/docs/devtools/evaluate-performance/performance-reference/
+
+## 실제 앱 최적화하기
+https://developers.google.com/web/fundamentals/performance/get-started/wrapup-7
+
+https://developer.chrome.com/docs/devtools/speed/get-started/
