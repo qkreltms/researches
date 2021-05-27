@@ -2,10 +2,11 @@
 2. 주어진 과제 최적화
 3. webpack등 활용해 더 최적화 해보기
 
-CRP(Critical Rendering Path)란?
+# 웹 성능 최적화 기초
+## CRP(Critical Rendering Path)란?
 브라우저가 HTML, CSS, JS를 읽고 픽셀로 표현되는 일련의 과정
 
-
+먼저 브라우저가 HTML 파일을 읽으면 아래와 같은 과정이 진행된다.
 ## 1. Parse HTML
 
 브라우저는 DOM을 생성한다.
@@ -39,13 +40,14 @@ DOM 구조를 만들면서
 
 link 또는 script tag를 만나면 각각의 파일을 네트워크 통신으로 가져온다. 
 
-이후에 구체적으로 설명할 내용이지만 js는 parser blocking이다. 즉, HTML parse가 진행되다가 js를 읽는 순간 CSSOM이 생성되기까지 HTML parse 과정을 잠시 멈춘다. 
+이후에 구체적으로 설명할 내용이지만 js는 parser blocking이다. 즉, HTML parse가 진행되다가 js를 읽는 순간 CSSOM(이후에 설명)이 생성되기까지 HTML parse 과정을 잠시 멈춘다. 
 ```html
 <html>
  <head></head>
  <body>
    <p>
    <span>Hello</span>
+   <!-- script를 만나면 HTML parse를 잠시 중단한다.  -->
    <script>
      // 여기서 Hello span을 가져와서 어떤 작업을 수행이 가능하다...
      // 하지만 World div를 가져와서 어떤 작업을 수행할 수 없다. null이 오기 때문
@@ -123,6 +125,15 @@ layer에 픽셀화를 진행한다. Paint는 여러 layer에 나눠서 진행될
 여러 layer에서 그린 것을 하나로 합친다.
 
 # 용어 정리
+## 1. FP(First Paint)
+첫 픽셀이 그려지는 시점
+![firstPatin](first_paint_13.png)
+(https://newrelic.com/blog/how-to-relic/browser-first-paint-first-contentful-paint)
+## 1. L(onload Event)
+각 페이지 로드의 최종 단계로, 브라우저가 추가 애플리케이션 로직을 트리거할 수 있는 onload 이벤트를 발생시킵니다.
+## 1. DCL(DOMContentLoaded Event)
+DOM이 준비되고 자바스크립트 실행을 차단하는 스타일시트가 없는 시점을 표시합니다. 즉, 이제 (잠재적으로) 렌더링 트리를 생성할 수 있습니다.
+
 ## 1. FCP(First Contentful Patint)
 페이지가 로딩을 시작해서 어떤 콘텐츠(텍스트, 이미지, svg, canvas, 등)가 화면에 보이기 시작할 때를 가리킴
 ## 1. LCP(Largest Contentful Paint)
@@ -139,11 +150,11 @@ LCP가 가장 중요한 컨텐츠는 아니다.
 
 이벤트 리스너가 붙지 않아도 측정된다.
 
-대상: <input>, <textarea>, <select>, <a>, etc
+대상: ```<input>, <textarea>, <select>, <a>, etc```
 
 왜 신경써야 하는가? => 유저의 첫 인상을 결정짓는다.
 
-## 1. TTI(Time To Interactive)
+## 1. TTI(Time to Interactive)
 페이지가 완전히 상호작용(interactive) 가능하기까지 얼마나 걸리는지 측정
 
 페이지가 완전히 상호작용 가능한지 다음의 방법으로 안다.
@@ -152,7 +163,13 @@ LCP가 가장 중요한 컨텐츠는 아니다.
 3. 페이지가 유저 인터렉션에 50ms 안에 반응할 때 
 
 ## 1. TBT(Total Blocking Time)
+FCP에서 TTI까지 main thread가 입력 응답에 얼마나 시간이 걸렸는지 측정
+## 1. TTFB(Time to First Byte)
+서버에 데이터 응답을 요청하고 다운받기까지 걸린시간
+![tbbt](tbbt.png)
 
+## 1. Long task
+50ms 보다 큰 작업을 말함
 
 ## 성능 최적화 방법
 
