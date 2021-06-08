@@ -64,7 +64,7 @@ js가 실행되기까지 parser blocking이 되는 중이라도 Preload Scanner�
 
 특정한 상황에서만 link를 통해 style을 불러올 수 도있다. 바로 media query를 쓰는 것이다.
 ```html
-// 인쇄가 이뤄질 때 style을 가져온다.
+<!-- 인쇄가 이뤄질 때 style을 가져온다. -->
 <link rel="stylesheet" href="style-print.css" media="print">
 ```
 
