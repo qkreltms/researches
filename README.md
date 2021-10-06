@@ -19,4 +19,4 @@ This is my personal researches of something what I interasted in for public view
 
 ## 언젠가...
 1. 웹어셈블리
-2. 텐서플로우 제이에서
+2. 텐서플로우 제이에스
