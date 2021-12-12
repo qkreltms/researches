@@ -6,14 +6,13 @@
 
 ## 정리 중:
 
-1. React (deeper structure)
-2. 피터 드러커 자기경영노트
+1. React 렌더링 원리 분석하기
 
 ## 하고 싶은 것:
 
 1. JS Design patterns
-1. Flux 소스 코드 까보기
-1. CI/CD tools 처음부터 셋팅해보기
+1. Flux 구조 파악하기
+1. CI/CD tools
 1. React-query PR 기여하기
 1. react-native 개인 앱 만들고 돈 벌기
 1. 바닐라 js로 어플리케이션 만들기(컴포넌트, 커스텀 프레임워크, 디자인 패턴 등 익히기)
