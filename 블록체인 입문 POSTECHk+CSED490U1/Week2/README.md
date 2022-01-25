@@ -62,7 +62,7 @@ Limitation of Bitcoin
     - High security, low cost, automated execution, clear results
 - Problem of Smart Contract
 
-  - 결국은 사람이 만듦
+- 솔리디티로 개발 가능
 
 - DApp(Decentralized Application)
 
