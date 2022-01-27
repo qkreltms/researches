@@ -29,7 +29,7 @@
 - 합의 알고리즘(Consensus Algorithm)
 
   - DPoS(Delegated Proof of Stake)
-    ![POWVSPOS](../POWVSPOS.PNG)
+    ![POWVSPOS](./POWVSPOS.PNG)
   - 21명을 투표해 참여시킴(Block producers)
 
 - No transaction fees
