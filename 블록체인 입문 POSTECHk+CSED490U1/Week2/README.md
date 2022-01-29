@@ -61,6 +61,7 @@ Limitation of Bitcoin
   - Benefit
     - High security, low cost, automated execution, clear results
 - Problem of Smart Contract
+- Account 기반으로 설계되어있다.
 
 - 솔리디티로 개발 가능
 
