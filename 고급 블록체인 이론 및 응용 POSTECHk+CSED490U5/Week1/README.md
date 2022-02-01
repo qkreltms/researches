@@ -57,3 +57,102 @@
   - 참여자들의 Computing power + Staking한 코인예 비례해 채굴이 쉬워짐
   - 또는 PoW로 생성된 블록을 PoS방식으로 검증
   - QuarkChain, Hypercase, Decred
+
+## 1.3. Delegated Proof of Stake
+
+- 위임 지분 증명
+  - 자신이 가진 지분을 이용해 블록 생성을 취한 투표를 한다.(PoS와 같음)
+  - 간접민주주의 방식
+  - 투표를 통해 대표를 선출하고 선출된 대표자(validator)들에게 권한 위임
+  - 블록이 빠르게 생성됨
+  - Steam, EOS, Ark, Lisk
+  - ![table](./table.png)
+  - 단점
+    - 소수의 대표들로 전체가 운영되기 때문에 중앙화됨
+    - 51% attack(소수의 대표자가 존재하기 때문에 공격당하기 쉬움)
+
+## DDPoS(이중 지분 증명)
+
+- 대표자외에 랜덤하게 선정된 노드들을 추가하는 방식
+- Sigma Chain, Futurepia
+
+## Hyper Delegated Proof of Stake
+
+- DPoS + Peer Reliability Rate(PRR)
+- 일정 수준의 PRR 값을 받아야 대표로 선정됨
+- Network & Hardware utilization
+- Responsibility
+- Reactivity
+- Interoperability(상호 운용성)
+- MoFAS에서 사용중
+
+## 1.4. Proof-based Consensus Algorithms
+
+- Proof of Authority(PoA, 권위증명)
+
+  - 사용자의 평판을 이용해 validator 선정
+  - 공개적으로 검증된 노드들만 선정됨
+  - 매우 빠름
+  - 신뢰할 만함
+  - 단점
+    - 중앙화됨
+  - Luniverse
+
+- Proof of Burn(PoB, 소각증명)
+  - PoS와 유사
+  - Staking대신 코인을 다시 사용할 수 없도록 소각함으로써 다음 블록을 생성할 수 있는 확률이 증가됨
+  - 에너지 소모가 적음
+  - mining hardware가 필요치 않음
+  - 더 많이 소각할 수록 채굴확률이 증가하기 때문에 miner들의 참여를 독려함
+  - 단점
+    - 느림
+    - 코인 소각 채굴계좌 투명성이 없다.
+  - ZCoin
+
+## Proof of Importance(PoI, 중요도 증명)
+
+- 사용자들이 활동을 많이 할 수록 보상, 블록생성 확률 높아짐
+- 작고 많은 거래량이 증가할수록 활동이 많음
+- 최소 10,000 coins가 필요
+- get transaction fee
+- NEM에서 사용중
+
+## Proof of Elapsed Time(PoET, 경과 시간 증명)
+
+- 참여자들은 무작위 시간 할당받고 참여자들은 대기해야함
+- 가장면저 경과 시간을 완료한 노드가 다음 블록 생성자가 됨
+- 신뢰할 만한 환경 필요(Intel's Software Guard Extension)
+- 매우 빠름
+- 랜덤한 시간으로 효울적이고 공평함
+- 확장성 높음
+- 단점
+  - 중앙화, 실행환경에 크게 의존
+- EdenChain, Hyperledger Sawtooth
+
+## Proof of Formulation(PoF)
+
+- 블록의 채굴자와 validator의 순서를 사전에 정해놓음
+- 매 cycle마다 채굴, validator, 최종적으로 block을 chain에 추가하여 전파하는 sync node들이 정해짐
+- ![pof](./PoF.PNG)
+- 빠름
+- Prevent fork
+
+## Proof of Brain(PoB, 두뇌 증명)
+
+- 토큰 보상의 대부분을 컨텐츠 제공자들에게 분배하는 시스템
+- Steemit, Steem
+- Steem에서는 DPoS를 이용해 블록 생성 검증
+- Steem 블록체인에서 발행되는 토큰의 대부분은 두뇌 증명을 통해 사용자들에게 분배됨
+
+## Proof of Believability(PoB)
+
+- 참여자들에 신뢰성에 비례해 validator 참여 확률 높아짐
+- 참여자들의 토큰 보유량, 거래량, 커뮤니티 참여 기여도, 노드 review 등에 의해 선출됨
+- 탈중앙성, 확장성, 보안성
+- IOST에서 사용됨
+
+## Proof of Capacity(PoC, 용량 증명)
+
+- PoW와 비슷함 단, 저장공간에 비례해 다음 블록 채굴 확률 늘어남
+- 하드드라이버 저렴
+- Burst Coin
