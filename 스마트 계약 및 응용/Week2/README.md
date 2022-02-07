@@ -51,8 +51,9 @@
 - 그런 의미에서 비트코인을 programmable money라고 부른다.
 - 앞서 말했던 닉 자보가 제안했던 스마트 컨트랙트가 블록체인 위에서 구현된 것이다.
 
-## 2.3. Pay-to-Public-Key-Hash
+## 2.3. Pay-to-Public-Key-Hash(P2PKH)
 
+- Bitcoin을 거래하기 위한 가장 일반적인 스크립트 형식
 - ![22](./111.PNG)
 - David가 Alice에게 코인을 6개를 주는데 이 transaction의 locking script에 Alice의 public key를 추가해서 Alice만 사용할 수 있게 한다.
 - Alice는 자신의 private key로 signature를 만들고 이를 unlocking script에 추가한다.
