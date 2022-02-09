@@ -67,3 +67,54 @@
 - 기존에 비트코인은 어드레스에 해당하는 private key가 한 개씩 존재하고 이 키를 사용해서 transaction을 signing하게 되는데 도난, 분실 당할경우 리스크가 크다는 단점이 있다.
 - 예를 들어 3개의 private key를 만들고 여러 곳에 분배하여 사용한다면 1개 보다는 안전하다.
 - ![1](./25.png)
+
+## 3.3. Escrow Contracts
+
+- Escrow는 상거래 시에, 판매자와 구매자의 사이에 신뢰할 수 있는 중립적인 제삼자가 중개하여 금전 또는 물품을 거래를 하도록 하는 것, 또는 그러한 서비스를 말한다.
+- 온라인상에서 신용카드를 사용해서 물건을 구매할 때 결재 후에도 주문을 취소하고 환불을 요청할 수 있다. 모든 정보가 카드회사에 의해서 관리되기 때문에 문제가 생기면 정정을 할 수도 있다.
+- 대신에 카드회사는 카드회사는 이런 비용을 명분으로 수수료를 취한다.
+- 반면에 비트코인에서는 이런 중재자가 없기 때문에 결재가 이뤄지면 이를 되돌릴 수 없다.
+- 이것이 꼭 나쁘기만은 한 것은 아닌게 관리비용 및 수수료가 없어 물건값을 낮출 수 있는 요인이 된다.
+- 하지만 어떤 경우에는 여전히 중개자가 필요하기도 하다.
+- 이럴경우 비트코인에서는 multisignature transaction을 이용해서 소비자는 물론 판매자의 위험도 줄일 수 있게 해준다.
+- 먼저 각각의 private key를 만든다.
+- 실제로는 서로 private key를 공유하지 않는다.
+- ![1](./26.png)
+- multisig script를 만든다.
+- ![1](./27.png)
+- 이 스크립트의 hash를 구한다.
+- ![1](./28.png)
+- 이제 buyer는 이 주소로 코인을 보낸다.
+- ![1](./29.png)
+- ![1](./30.png)
+- ![1](./31.png)
+- ![1](./32.png)
+- Seller는 물건값이 스크립트 해시로 지불된 것을 확인했다면
+- 자신에게 지불하는 transaction을 만들기 시작한다.
+- 먼저 script hash에게 지불하는 transaction을 찾아서 이를 input으로 만든다. -그리고 output은 자신 즉, seller에게 지불하도록 설정하고 이렇게 만들어진 input과 output을 통해서 transaction을 만든다.
+- ![1](./33.png)
+- 그리고 앞에서 만든 redeem script와 자신의 private key로 transaction을 사인해서 signature를 구한다.
+- ![1](./34.png)
+- 그리고 이렇게 만들어진 transaction과 signature를 buyer에게 보낸다.
+- ![1](./35.png)
+- 이제 물건을 받은 소비자가 물건에 만족한 경우에는 판매자가 보내온 transaction을 자신의 private key로 sign을 한 후에 publish해서 물건 값이 최종적으로 판매자에게 지불되게 한다.
+- 즉, 먼저 보내온 transaction을 자신의 private key로 사인하여 signature를 구한다.
+- ![1](./36.png)
+- 그리고 자신의 signature와 판매자의 signature를 transaction에 적용해서 사인된 transaction을 만들고 이를 publish 한다.
+- ![1](./37.png)
+- 최종적으로 Seller의 UTXO를 보면 물건값이 Seller에게 지불되었음을 알 수 있다.
+- ![1](./38.png)
+
+- 만약 소비자가 돈을 보냈는데 판매자가 물건을 보내지 않는다면?
+- 소비자는 중개자에게 연락하고, 중개자는 판매자와의 중재를 시작한다.
+- 이 경우 중개자가 소비자에게 대금을 반환하는 transaction을 시작한다.
+- 먼저 script hash에게 지불하는 transaction을 찾아서 이를 input으로 삼는다.
+- ![1](./39.png)
+- 또 하나는 중재자 자신에게 수수료가 지불되도록 transaction을 만든다.
+- ![1](./40.png)
+- 그리고 자신의 private key로 multisig script와 transaction을 사인해서 signature를 구한 후 transaction과 sig를 소비자에게 보내준다.
+- ![1](./41.png)
+- 이렇게 구한 최종 사인 된 transaction을 publish해서 buyer는 돈을 돌려받고 중개자는 수수료를 받고 이 거래는 끝나게 된다.
+- ![1](./42.png)
+- 이 모델의 장점은 분쟁이 있을 때만 중개자에게 수수료를 지불한다는 것이다.
+- 블록체인 기반의 escrow 서비스에서는 거래에 사용된 자금이 hash 계좌에 머물기 때문에 보다 안전하다는 특징이 있다.
