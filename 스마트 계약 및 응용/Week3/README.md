@@ -118,3 +118,60 @@
 - ![1](./42.png)
 - 이 모델의 장점은 분쟁이 있을 때만 중개자에게 수수료를 지불한다는 것이다.
 - 블록체인 기반의 escrow 서비스에서는 거래에 사용된 자금이 hash 계좌에 머물기 때문에 보다 안전하다는 특징이 있다.
+
+## 3.4. P2SH Puzzle
+
+- 주어진 수식에서 한 값을 지우고 이 값을 찾는 문제를 퍼즐로 만든다. 이를 비트코인 스크립트로 만든다면?
+- ![1](./43.png)
+
+- 이렇게 확인된 스크립트를 두 부분으로 나누거 앞에 것은 unlocking script로 뒷부분은 locking script로 사용한다.
+- ![1](./44.png)
+- 그러면 이 locking script로 작성된 transaction에 포함된 코인은 이에 맞는 unlocking script를 제시해야만 사용할 수 있게 된다.
+- 퍼즐을 푼 사람은 이 unlocking script로 자신이 문제를 풀었다는 것을 제시하고 상금은 받게 된다.
+- 문제를 내는 사람은 이 locking script를 직접 사용하는 것이 아니고 이것의 hash 값을 사용한다. 그리고 이 script hash에 상금을 지불한다.
+- 따라서 Output의 locking script는 20byte의 script hash를 갖게 되는 Pay-to-script-hash transaction이 된다.
+- 이제 예를 들어서 Bob이 이 문제를 풀었고, 상금을 가져가려 한다고 생각해본다.
+- ![1](./45.png)
+- 먼저 unlocking script에 답을 적는다.
+- 그리고 앞에서 script hash를 구하는 데 사용했던 script를 붙여 최종 unlocking script를 만드나.
+- 그리고 이것으로 transaction을 만들어 자신에게 코인을 지불하게 하면 상금을 받는다.
+- 이제 간단히 실습해본다.
+- 먼저 앞에서 사용했던 예의 script를 가지고 script hash를 구한다.
+- 각 명령을 16진수 opcode로 바꾸어준다.
+- 숫자 데이터는 여기서 2바이트이기 때문에 그 크기를 앞에 추가한다.
+- ![1](./46.png)
+- Bitcoin IDE를 사용하면 script에 해당하는 encoding을 보다 쉽게 구할 수 있다.
+- ![1](./47.png)
+- 이제 구해진 스크립트의 hash 값을 찾는다.
+- 앞에서 구한 스크립트를 scriptaddr 함수에 넣어서 script hash를 구한다.
+- 이때 우리는 testnet을 사용할 것이므로 prefix 196을 추가해서 2로 시작하는 testnet용 script hash를 구해서 scaddr 변수이 저장한다.
+- ![1](./48.png)
+- 이제 이렇게 만들어진 script hash에 상금을 지불한다.
+- 먼저 Alice의 UTXO를 사용해서 input을 만든다.
+- 수수료를 제외한 금액을 mksend 명령을 이용해 transaction을 만든다.
+- ![1](./49.png)
+- 이제 문제를 풀고 상금을 받아본다.
+- 먼저 unlocking script를 만든다.
+- 정답을 적고 redeem script를 붙이는데 각각 그 사이즈를 먼저 적어주게 된다.
+- redeem script의 경우 사이즈가 8, 즉 전체 길이가 8 byte이므로 8을 스크립트 앞에 넣어준다.
+- ![1](./50.png)
+- 이제 unlocking script가 준비 되었으니 bob은 자신에게 상금을 보내는 transaction을 만든다.
+- 먼저 input에 상금이 지불된 transaction을 넣고
+- ![1](./51.png)
+- output은 상금이 자신에게 지불되도록 만든다.
+- ![1](./52.png)
+- 만들어진 transaction을 보면 아직 input section(ins)의 script 즉 unlocking script가 비워져 있음을 볼 수 있다.
+- ![1](./53.png)
+- 일반적인 경우에는 자신의 private key로 sign을 함으로써 unlocking script를 만들게 되지만 이번 경우에는 우리가 앞에서 만든 puzzle의 정답이 담긴 script를 사용한다.
+- ![1](./54.png)
+- 이제 확인해보면 상금을 받았음을 알 수 있다.
+- ![1](./55.png)
+- 이 Puzzle의 진짜 문제는 redeem script를 찾는 것이다.
+- 예를 들어 redeem script를 재구성할 수 있는 hash 힌드를 주면
+- ![1](./56.png)
+- 먼저 plus와 equal을 비트코인 스크립트 opcode로 바꾼다.
+- ![1](./57.png)
+- 그리고 x, y 값을 추축해본다.
+- 비트코인 스크립트에서는 숫자, 특히 상수 값을 표현하는 다양한 방법들이 있는데 이 예제에서는 2byte로 표현된다고 가정한다.
+- x, y에 숫자를 대입하고 hash를 구한다.
+- ![1](./58.png)
