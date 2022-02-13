@@ -175,3 +175,39 @@
 - 비트코인 스크립트에서는 숫자, 특히 상수 값을 표현하는 다양한 방법들이 있는데 이 예제에서는 2byte로 표현된다고 가정한다.
 - x, y에 숫자를 대입하고 hash를 구한다.
 - ![1](./58.png)
+
+## 3.5. Return Transactions
+
+- Data Recording Output => OP_RETURN
+- 이 transaction은 개발자들에게 코인의 거래와 상관없는 80byte 정도의 데이터를 transaction의 output에 넣을 수 있게 해준다.
+- 이전에는 사람들이 거래와 관련 없는 정보를 블록체인에 기록하기 위해서 fake UTXO를 만드는 경우가 많았는데 이러다 보니 실제로 사용할 수 없는 UTXO가 늘어나는 문제점이 생겼다.
+- OP_RETURN을 사용하면 UTXO set에 들어가지 않기 때문에 사용할 수 없는 UTXO가 늘어나지 않는다.
+- return transaction은 locking script의 output에 위치한다.
+- OP_RETURN은 항상 invalid 한 것으로 처리되어 이 script에 대응하는 unlocking script는 없다.
+- RETURN script에 코인을 포함하고 있을지라도 UTXO에 들어가지않고 그 코인은 다시 쓸수없기 때문에 일반적으로 코인을 포함하지는 않는다.
+- RETURN script는 data section을 갖는데 data는 83byte로 제한된다.
+- ![1](./59.png)
+- 아래 사진의 transaction을 보면 output에 2개의 script가 있는데 첫 번재 것은 P2PKH이고 두번째 것은 RETURN script의 예이다.
+- ![1](./60.png)
+- 예에서 RETURN script에 들어간 값은 "how is everyone!"의 아스키코드를 16진수로 표현한 것이다.
+- e의 ASCII코드는 16진 수로 65이다. 그래서 RETURN 뒤에 넣은 데이터에 65라고 적어준 것이다.
+- ![1](./61.png)
+- 위와 같이 필요한 데이터를 return operator 뒤에 추가하면 된다.
+- 실제 코드예제
+- 만약 Alice가 전기 회사로 전기요금을 코드로 지불하면서 7월 요금이라는 메시지를 포함시키려고 한다면
+- 1. Alice와 전기회사의 private key, public key, 주소를 생성한다.
+  - ![1](./62.png)
+- 2. Alice의 UTXO를 보면 약 90만 사토시가 있다.
+  - ![1](./63.png)
+- 3. Alice의 주소를 input으로 하고 보내는 사람을 output으로하여 transaction을 만들고 수수료는 5000 사토시로 한다.
+  - ![1](./64.png)
+- 4. 만들어진 transaction을 보면 두 개의 output이 존재한다. 하나는 전기회사에 10만 사토시, 나머지 잔돈을 Alice에게 다시 되돌려주는 output
+  - ![1](./65.png)
+- 5. 이제 OP_RETURN을 이용하여 세 번째 output을 추가하여 메시지를 담는다. 아래의 사진에서 value를 0으로하는 3번째 output이 추가되었음을 볼수 있다.
+  - ![1](./66.png)
+- 6. 계속해서 return script에 OP_RETURN 이후에 메시지가 담긴것을 확인할 수 있다.
+  - ![1](./67.png)
+- 이제 새롭게 만들어진 transaction을 사인한 후 testnet에 publish 한다.
+  - ![1](./68.png)
+- Alice의 UTXO를 보면 메시지가 추가된 것을 알수 있다.
+  - ![1](./69.png)
