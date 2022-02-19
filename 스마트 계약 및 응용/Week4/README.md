@@ -92,3 +92,66 @@ contract SimpleStorage {
 - 단 contract account는 스스로 거래를 생성하지 못 한다.
 
 ## 4.4. Ethereum Virtual Machine
+
+- 이더리움 가상머신은 .NET이나 JVM과 유사하게 이더리움 바이트코드가 deploy되고 실행되는 computation 엔진이다.
+- 이더리움 가상머신은 Turing complete하다 즉, 계산 가능한 모든 문제를 풀 수 있다. 어떤 프로그램도 실행할 수 있다.
+- 하지만 실제로 이더리움 가상머신은 무한히 실행되지는 않고 주어진 gas의 한도 안에서만 실행되는 제약이 있기 때문에 유사-Turing complete하다고 말하기도 한다. 이런 제약성 때문에 멈추지 않고 무한히 동작하는 프로그램을 방지할 수 있다.
+- ![1](./3.PNG)
+- 이더리움 가상머신은 stack-based architecture이다. 스택 기반 머신에서는 메모리상의 값들이 stack에 저장된다.
+- 메모리에는 영구적이지 않은 값들이 바이트 어레이로 이루어져있다.
+- Storage는 비휘발성이어서 word array 형태로 이더리움의 상태를 저장하는데 사용된다.
+- Program code영역에는 contract code가 저장된다.
+- Ethereum virtual machine이 이해하는 명령어들이 정의되어 있는데 이들을 EVM instruction set이라고 한다.
+- 일반적으로 개발자들은 solidity 같은 언어 보다 상위 수준의 언어로 개발을 하고 이를 EVM이 이해할 수 있는
+  bytecode instruction set으로 compile하게 된다.
+- ![1](./4.PNG)
+- 이더리움 virtual machine은 주어진 명세에 따라서 contract code를 실행하면서 전체 이더리움의 state를 변경해 나가는 거대한 state-machine으로 이해할 수 있다.
+- ![1](./5.PNG)
+- 예를 들어서 smart contract가 실행되게 되면, 제일 먼저 EVM이 현재의 블록 정보 등 필요한 데이터를 갖고 만들어진다.
+- ![1](./6.PNG)
+- 또한 환경 변수로 gas supply가 설정된다.
+- stack과 메모리를 이용해서 코드가 실행되면서 계속해서 gas가 부족한지 여부를 확인한다.
+- gas가 충분하고 transaction이 성공적으로 끝나면 현재까지의 결과를 Ethereum state로 저장하게 된다.
+- 즉, 새로 만들어진 account가 있다면 world state의 mapping에 추가되고, 개별 account의 balance, storage등이 update된다.
+- ![1](./7.PNG)
+- 지난번에 remix로 구했던 값의 opcodes항목을 통해서 어떻게 compile 되었는지 본다.
+- ![1](./8.PNG)
+- 제일 먼저, PUSH1뒤에 오는 1byte를 stack에 넣으라는 명령이다.
+- 따라서 뒤에 오는 0x80이 stack에 넣어진다.
+- 마찬가지로 다음 번 0x40도 stack에 넣어져서 stack에는 두 값이 들어가게 된다.
+- ![1](./9.PNG)
+- 다음 번 명령은 memory store로 스택으로부터 두 값을 읽어서 EVM의 메모리에 저장하는 명령이다.
+- 스택 맨 위에 있는 값은 메모리의 주소로 사용되고, 두 번째 값이 메모리에 저장된다.
+- 이미의 예에서는 0x40번지에 0x80이 저장된다.
+- 그리고 stack은 다시 비게 된다.
+- ![1](./10.PNG)
+- 다음 명령 CALLVALUE는 현재 메시지를 통해서 전달받은 이더를 스택에 올려놓는 명령이다.
+- 여기서 주의할 점은 Externally owned account가 transaction을 통해서 smart contract와 interaction 하는 두 가지 경우가 있는데, 하나는 *contract를 생성*하는 경우이고 다른 하나는 *이미 생생성된 contract에 메시지를 보내는 경우*이다.
+- 첫 번째 contract를 생성하는 경우에 보내는 코드는 deployment bytecode로 나중에 이 코드의 실행 결과가 새롭게 생성된 contract의 code가 된다.
+- 우리가 앞에서 살펴본 opcode는 deployment bytecode이다.
+- ![1](./11.PNG)
+- 컴파일된 bytecode를 다시 보면 앞부분이 새로운 contract를 만드는 초기화 부분이고 뒷부분이 실제 contract code로 저장되어 contract가 불렸을 경우 실행되는 코드이다.
+- ![1](./12.PNG)
+- Runtime bytecode의 첫 부분은 dispatcher라고 불리며
+- 앞부분은 앞에서 본 것과 유사하게 메모리의 40번지에 0x80을 적고 스택에 0x4를 적은후에 calldatasize 명령어를 실행해서 현재 transaction의 data크기를 구하고 이를 stack에 넣는다.
+- 그 결과 스택에는 두 값이 들어있게 된다.
+- 다음의 Less-than 명령은 맨 위의 값이 다음 값보다 작은지를 확인해서 그 결과를 stack에 넣어준다.
+- 이 경우 transaction의 data size가 4보다 작은 지를 확인하는 것인데 앞에서 우리가 배웠듯이 contract의 메소드를 호출할 때 메소드 signature hash 값의 앞 4바이트를 사용하기 때문에 이 크기가 4보다 다면 메소드를 호출한 것이 아니게 된다.
+- 그 결과에 따라서 0 혹은 1이 stack에 넣어진다.
+- 계속해서 43을 stack에 넣고 jump if 명령, condition에 따라서 주어진 주소로 이동
+- 이 케이스에서는 사이즈가 작으면 43번지로 이동하게 된다.
+- 계속해서 stack에 0을 넣고 calldataload 명령으로 transaction의 data를 읽습니다.
+- 그리고, 계속해서 29byte의 값을 stack에 넣게 됩니다.
+- 다음 swap 명령으로 stack의 두 값의 위치를 바꿉니다.
+- Div 명령은 두 값을 나눕니다.
+- 그 결과 transaction의 데이터 값 중에서 앞의 4바이트를 구하게 됩니다.
+- 이제 다음 명령은 stack의 값을 복사해서 넣은 후에, stack에 0x60FE47b1값을 넣어 줍니다.
+- 이 값은 우리가 앞에서 봤던 set 메소드의 hash 값 앞 4바이트입니다.
+- 계속해서 Equal 명령을 통해서 stack의 상위 두 값이 같은지를 확인 후에 jump if 명령을 통해서 같으면 48번지로 이동을 합니다.
+- 이런 식의 dispatch 과정을 통해서 EVM은 어떤 메소드가 호출되었는지를 확인하고 해당 메소드의 바이트코드를 실행하게 됩니다.
+- ![1](./13.PNG)
+- 모든 이더리움 노드는 그 내부에 Ethereum virtual machine를 실행하고 있고 peer-to-peer 방식으로 연결되어있다. 각자가 Ethereum virtual machine을 독립적으로 실행하게 된다.
+- 이렇게 서로가 독립적으로 실행되는 이유는 탈 중앙화된 방식으로 한 시스템에 오류가 생겨도 전체 시스템에는 영향을 주지 않으면서 서로 간의 합의를 통해서 위조, 변조를 막기 위해서이다.
+- 이런 이유로 전통적인 컴퓨터에서의 실행보다 느리고 더 많은 비용이 들 수 있는 단점이있다.
+
+## 4.5. Gas
