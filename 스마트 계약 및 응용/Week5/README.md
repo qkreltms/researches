@@ -204,3 +204,74 @@ enum State {
   ```
 
 ## 5.6. Functions
+
+- function [Name]([parameters]) {public | private | internal | external} [pure | view | payable] [modifiers] (return types)
+  - qualifiers(자격을 주는 사람)
+    - pure: function은 storage 내의 variable을 읽지도 변경하지도 않는다.
+    - view: function은 read only
+    - payable: 결제를 처리할 수 있는 function
+  - modifiers: function에 특별한 조건을 추가할 때 사용된다.
+
+```
+function pickWinner() public onlyOwner {
+  ...
+}
+function refund() public onlyOwner {
+  ...
+}
+modifier onlyOwner() {
+  require(msg.sender == manager);
+  _;   // modifiter가 적용된 함수의 코드가 위치하게 됨
+}
+```
+
+- function get() public view returns (uint) {
+
+}
+
+## 5.7. Event
+
+- 이벤트는 컨트랙트가 작업을 수행하는 동안 로그를 남길 수 있게 해주는 기능을 말함, 이벤트를 활요하면 디버깅이 수월해짐
+- ![1](./5.4.3.png)
+- Transaction이 끝나게 되면 Transaction receipt가 만들어 짐.
+- 여기에는 다양한 transaction의 결과가 담기게 되는데, 예를들면 transaction 이후의 상태라든지, 사용된 총 gas의 양들과 transaction 동안 생성된 log가 담김
+- ![1](./5.4.4.png)
+- Event 선언시 파라메터들은 블록체인 내에 transaction log에 저장됨
+- 파라메터에 indexed를 붙이면 그 값은 특별히 topics라고 불리는 indexed table 즉 hash table에 저장되어 나중에 쉽게 찾을 수 있게된다.
+- ![1](./5.4.5.png)
+- 이벤트는 emit키워드로 호출할 수 있음
+- ![1](./5.4.6.png)
+
+## 5.8 Contracts
+
+- Contract는 state variable, function, event, function modifier등으로 구성되어 있다.
+- ![1](./5.4.7.png)
+- 하나의 솔리디티 파일에 여러 contract가 존재할 수 있다.
+- constructor: 생성자, 생성자는 public/internal로 생성가능
+- Fallback Function: 다른 account에서 이 contract를 호출하면서 특정 메소드 이름을 명시하지 않았거나 존재하지 않는 메소드를 불렀을 경우에 불리게 되는 함수
+
+```
+contract SimpleStorage {
+  constructor() public {
+    owner = msg.sender
+  }
+  function () external payable {} // 이름이 없는 함수 => Fallback Function
+
+  function destroy() public onlyOwner {
+    selfdestruct(owner) // solidity에서 따로 destructor가 있지는 않지만 selfdestruct 함수를 사용해 현재 contract없애고 남은 이더 주어진 address로 보내기 가능
+  }
+}
+```
+
+- Contract Inheritance
+- Client에서 Child를 생성하는데 is 키워드로 상속받고child.Set은 Parent에서, Get은 Child에서 가져오되 data 값은 internal인 Parent에서 가져옴
+- ![1](./5.4.8.png)
+- 다중상속도 가능(다이아몬드 문제 발생)
+- solidity에서는 나열하는 순서 대로 가장 뒤에 명명된 contract가 가장 가까운 parent로 됨
+- 따라서 만약에 B와 C에 같은 이름의 함수가 있다면 C가 가장 최근에 추가된 parent이기 때문에 C의 메소드가 호출됨
+- ![1](./5.4.9.png)
+- 더 복잡한 상속 예제
+- 1. 일렬 구조
+- 2. 다이아몬드 구조
+- 3. super
+- 4. 상속관계 말단의 인스턴스 사용할 때
