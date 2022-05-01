@@ -264,14 +264,44 @@ contract SimpleStorage {
 ```
 
 - Contract Inheritance
-- Client에서 Child를 생성하는데 is 키워드로 상속받고child.Set은 Parent에서, Get은 Child에서 가져오되 data 값은 internal인 Parent에서 가져옴
-- ![1](./5.4.8.png)
-- 다중상속도 가능(다이아몬드 문제 발생)
-- solidity에서는 나열하는 순서 대로 가장 뒤에 명명된 contract가 가장 가까운 parent로 됨
-- 따라서 만약에 B와 C에 같은 이름의 함수가 있다면 C가 가장 최근에 추가된 parent이기 때문에 C의 메소드가 호출됨
-- ![1](./5.4.9.png)
-- 더 복잡한 상속 예제
-- 1. 일렬 구조
-- 2. 다이아몬드 구조
-- 3. super
-- 4. 상속관계 말단의 인스턴스 사용할 때
+
+  - Client에서 Child를 생성하는데 is 키워드로 상속받고child.Set은 Parent에서, Get은 Child에서 가져오되 data 값은 internal인 Parent에서 가져옴
+  - ![1](./5.4.8.png)
+  - 다중상속도 가능(다이아몬드 문제 발생)
+  - solidity에서는 나열하는 순서 대로 가장 뒤에 명명된 contract가 가장 가까운 parent로 됨
+  - 따라서 만약에 B와 C에 같은 이름의 함수가 있다면 C가 가장 최근에 추가된 parent이기 때문에 C의 메소드가 호출됨
+  - ![1](./5.4.9.png)
+  - 더 복잡한 상속 예제
+  - 1. 일렬 구조
+    - is 키워드 뒤의 contract들은 순서대로 바텀-> 탑 상속관계를 이룬다.
+    - ![1](./5.4.10.png)
+    - mortal contract에서 kill 메소드를 찾게된다.
+  - 2. 다이아몬드 구조
+
+    - ![1](./5.4.11.png)
+    - 27번째 줄의 obj.kill()은 Base2의 kill을 호출하고 moral.kill()을 호출하게 된다.
+    - Base1의 kill을 호출할 방법이없다. Finial is Base1, Base2에서 Base1이 앞에 위치하고 있기 때문에 kill을 Base2에서만 찾게됨 Solidity 규칙
+    - Base2에서 Base1을 호출할 수 없다. 아무런 관계가 없기 떄문에
+
+  - 3. super
+    - 다이아몬드 구조에서 super 키워드를 사용하면 Base1을 호출할 수 있다.
+    - ![1](./5.4.12.png)
+    - Final -> Base2 -> Base1 -> Mortal -> Owned 순서로 접근하게됨
+  - 4. 상속관계 말단의 인스턴스 사용할 때
+    - ![1](./5.4.13.png)
+    - 이 경우는 26번째 줄에 Mortal obj를 주의깊게 봐야한다.
+    - Mortal의 kill을 호출하는 것이아니라
+    - Solidity의 우선순위에 따라 Base2.kill을 호출하게 된다.
+
+- Arguments for Base Constructors
+  - ![1](./5.4.14.png)
+  - 만약 상속관계에 있는 Contract의 constructor에 값을 넘겨주려면...
+  - 8번 줄과 같이하거나 13번째 줄과 같이 윗 contract에 위임하는 방법이 있다.
+- Abstract Contracts
+  - contract에서 일부 함수가 구현되지 않은 것이 있는데 이를 abstract contract라고 한다.
+  - ![1](./5.4.15.png)
+  - 이 contract를 상속받는 contract가 이를 구현해야한다.
+  - 만약 구현하지 않으면 에러가 발생한다.
+  - ![1](./5.4.16.png)
+  - interface를 사용하여 abstract contract를 만들수도 있다.
+  - ![1](./5.4.17.png)
