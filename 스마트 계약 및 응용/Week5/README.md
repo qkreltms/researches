@@ -305,3 +305,105 @@ contract SimpleStorage {
   - ![1](./5.4.16.png)
   - interface를 사용하여 abstract contract를 만들수도 있다.
   - ![1](./5.4.17.png)
+
+## 5.9 Handling Errors
+
+- solidity에서는 try, catch를 쓰지 않는다.
+- 예외가 발생하면 현재까지의 모든 transaction이 중단되고 transaction 이전 상태도 되돌아간다.
+
+- pre-condition (함수의 앞쪽에서, 남은 gas는 반환.)
+
+  - require(): 조건에 맞지 않으면 예외를 던진다.
+
+  ```
+  require(msg.sender == owner)
+  require(balances[msg.sender] >= amount, "Balance is not enough") // 조건, 메시지
+  ```
+
+  - revert(): require의 다른 형태
+
+  ```
+  if (msg.sender != owner || balances[msg.sender] >= amount)
+    revert();
+  ```
+
+- post-condition (함수의 뒷부분에서, 남은 gas 반환되지 않음)
+
+  - assert(): 조건문이 false여야 에러발생
+
+  ```
+  assert(address(this).balance >= totalSupply);
+  ```
+
+## 5.10 Libraries
+
+- 코드 재활용/재사용/생산성 장점
+- 라이브러리는 한번 설치되어 여러 contract에서 사용이 가능하다 따라서 동일한 코드의 라이브러리가 이더리움 네트워크에 설치되는 것을 막아준다.
+- 라이브러리는 자신의 storage를 갖기 못하며 이더도 소유할 수 없다.
+- state 변수를 가질 수 없고 상속 관계에 있을 수 없고 fallback이나 payable 함수를 가질 수 없다.
+
+```
+pragma solidity >= 0.4.0 < 0.7.0;
+
+library lib {
+  function getBal() public view returns (uint) {
+    return address(this).balance
+  }
+}
+
+contract Sample {
+  function getBalance() public view returns (uint) {
+    return lib.getBal() // <library이름>.<함수>, Sample의 context 상에서 실행된다.
+  }
+
+  function() external payable {}
+}
+```
+
+- Boolean 타입을 library와 연결 가능 예제(using ... for ...)
+
+```
+pragma solidity >=0.4.0 < 0.7.0
+
+library lib {
+  function xor(bool a, bool b) public pure returns (bool) {
+    return (a||b) && !(a && b);
+  }
+}
+
+contract Sample {
+  using lib for bool;
+
+  function test() public pure returns (bool) {
+    return (true.xor(false) == true);
+  }
+}
+```
+
+- openzeppelin 라이브러리
+
+  - 오버플로우 방지
+
+  ```
+  pragma solidity >= 0.4.0 < 0.7.0
+
+  import 'github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol';
+
+  contract Sample {
+    function test(uint256 a, uint256 b) public pure returns (uint256) {
+      return (SafeMath.add(a, b))
+    }
+  }
+  ```
+
+  - using - for 쓰면 더 간결하게 사용 가능
+
+  ```
+    contract Sample {
+    using SafeMath for *;
+
+    function test(uint256 a, uint256 b) public pure returns (uint256) {
+      return (a.add(a, b))
+    }
+  }
+  ```
