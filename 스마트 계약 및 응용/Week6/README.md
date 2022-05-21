@@ -160,3 +160,164 @@ contract SimplePonzi {
     }
 }
 ```
+
+## 6.3 Lottery Contract
+
+- 블록체인은 그 투명성 때문에 복권 개발에 좋은 구조
+
+1. 복권 진행 기간 설정
+2. 유저가 복권을 사면 address를 저장한다.
+3. 정해진 시간이 지나면 당첨자를 뽑는다.
+4. 기록된 address중에 랜덤으로 하나를 뽑는다.(모든 블록에서 같은 값을 제공하는 랜덤 값을 써야한다., 또한 블록체인 특성상 랜덤 함수 라이브러리 제공 없음)
+5. winner에게 당첨금을 지불한다.
+
+- 1번은 컨트랙트의 constructor로 duration을 받고 contract를 생성
+- 나머지 3개는 contract의 메소드로 구현한다.
+- ![1](./6.3.1.png)
+
+아래 코드는 block hash때문에 web remix에서 web3 injected로 배포해야된다.
+
+```
+pragma solidity >= 0.4.0 < 0.7.0;
+
+contract SimpleLottery {
+    uint ticketingClosesAt;
+    address[] public tickets;
+    address public winner;
+
+
+    constructor(uint duration) public {
+        // now: 현재 블록 타임스탬프
+        ticketingClosesAt = now + duration * 1 days;
+
+    }
+
+    function buy() public payable {
+        // 금액확인
+        require(msg.value >= 0.001 ether);
+        // 복권 시간 확인
+        require(now < ticketingClosesAt);
+
+        tickets.push(msg.sender);
+    }
+
+    fallback() external payable {
+        buy();
+    }
+
+    receive() external payable {}
+
+    function drawWinner() public {
+        // NOTE: require(false) 일 때 에러 발생
+
+        // 종료시간 이후 5분이 지났는지 확인
+        // 게임에 참여하는 동안에는 당첨자를 찾는데 사용할 block number를 알 수 없도록 하기 위해서
+        require(now > ticketingClosesAt + 5 minutes);
+        // winner가 할당되지 않았는지 확인
+        // NOTE: address 초기값 0x00으로 할당됨
+        require(winner == address(0));
+
+        // 이제 랜덤 넘버를 구한다.
+        // 현재 블록의 hash 값을 알수 없기 때문에 이전 블록의 해쉬값을 구함(?)
+        bytes32 hash = blockhash(block.number - 1);
+        bytes32 rand = keccak256(abi.encode(hash));
+
+        // hash값을 정수로 변환한뒤에 당첨자를 구한다.
+        winner = tickets[uint(rand) % tickets.length];
+    }
+
+    function withdraw() public {
+        // 당첨자에게 보내는 것인지 확인
+        require(msg.sender == winner);
+        // 모든 이더를 보낸다
+        msg.sender.transfer(address(this).balance);
+
+    }
+}
+```
+
+- **위 코드의 랜덤 넘버를 구하는 로직에 이슈가 있다.**
+
+  - 블록을 생성하는 채굴업자들이 자신들에게 유리한 방향으로 블록 해시 값을 조정할 가능성이 있기 때문에.
+  - 예를 들어서, 생성된 블록 번호가 자신에게 유리하지 않는다면 이를 채택하지 않고 다시 새로운 블록을 만들면서 자신의 당첨 확률을 높일 수도 있다.
+
+- 새로운 방법은 게임 참여자들에게 각자 랜덤 숫자를 제출하도록 하고 이들을 전부 합친 값의 hash 값을 random number로 사용하는 방식으로 한다.
+  - 하지만 참여자들이 제출한 랜덤 숫자가 모두 블록체인상에 공개되기 때문에 당첨 번호를 알 수있다는 단점이 있다.
+  - 그렇기 대문에 자신의 랜덤 숫자를 감추어서 제출하고 나중에 공개하는 방식을 사용한다.
+  - 이러한 방식을 commit-reveal 방식이라고 한다.
+
+1. contract가 배포될 때 복권 기간 뿐만아니라 random 숫자를 공개하는 기간을 설정할 수 있도록 한다.
+2. 주어진 기간 동안 복권을 산다. 이 때에 구매자는 랜덤 숫자의 hash 값을 제출한다. 이를 commitment hash라고 부르겠다. commitment hash는 자신의 address와 랜덤 숫자를 합친 값의 hash이다.
+3. 티켓팅 기간이 끝나면.참여자들은 자신의 random number를 공개한다.
+4. contract는 사용자가 밝힌 random number와 사용자의 주소를 이용해 hash 값을 만든다.
+5. 이 hash 값이 자신이 기록하고 있는 값과 같은지를 확인한다.
+6. 같다면 사용자의 random number를 seed에 추가한다. 그리고 사용자의 address를 최종 게임 참여자의 리스트에 추가한다.
+7. 이제 당첨자를 뽑는다. 앞 단계에서 주어진 seed 값을 바탕으로 최종 참여자 address 중에서 하나를 뽑고 당첨자로 선정하고 이더를 보낸다.
+
+```
+pragma solidity >=0.4.0 < 0.7.0;
+
+contract CommitRevealLottery {
+    uint public ticketingCloseAt;
+    uint public revealingCloseAt;
+
+    address[] public tickets;
+    address public winner;
+    bytes32 seed;
+    // key, value
+    mapping (address => bytes32) public commitments;
+
+    constructor(uint duration, uint revealDuration) public {
+        ticketingCloseAt = now + duration * 1 days;
+        // 왜 공개일도 따로 둬야되지?
+        revealingCloseAt = ticketingCloseAt + revealDuration * 1 days;
+    }
+
+    // commitments: 구입시 숫자 입력 + address 더한 hash값
+    function buy(bytes32 commitment) public payable {
+        require(msg.value >= 0.001 ether);
+        require(now < ticketingCloseAt);
+
+        commitments[msg.sender] = commitment;
+    }
+
+    // player address + 랜덤 숫자
+    function createCommitment(address player, uint rand) public pure returns (bytes32) {
+        return keccak256(abi.encode(player, rand));
+    }
+
+    // 왜 또 rand를 넣어야하지?? => commitments[msg.sender]하면 되는것 아닌가??
+    // 사용자들은 random 숫자를 공개하고 seed 값을 업데이트한다.
+    function reveal(uint rand) public {
+        require(now >= ticketingCloseAt);
+        // 구입했지만 공개일에 열리지 않은 블록은 버린다??
+        require(now < revealingCloseAt);
+
+        bytes32 hash = createCommitment(msg.sender, rand);
+        // 사용자가 밝힌 rand 값을 이용해서 commitment hash를 만들고 이 값이 앞에서 사용자가 제출했던 commitment
+        // hash 값과 동일한 지를 확인한다.
+        require(hash == commitments[msg.sender]);
+
+        seed = keccak256(abi.encode(seed, rand)); // seed 값을 계속 업데이트하여 랜덤성을 부여한다.
+        tickets.push(msg.sender);
+    }
+
+    // 당첨자를 구한다.
+    function drawWinner() public {
+        require(now > revealingCloseAt + 5 minutes);
+        require(winner == address(0));
+
+        winner = tickets[uint(seed) % tickets.length];
+    }
+
+    // 당첨자에게 돈 보내기
+    function withdraw() public {
+        // 보낼사람이 winnder인지 확인
+        require(msg.sender == winner);
+
+        // this = contract의 인스턴스(여러 블록이 있지만 컨트랙트는 하나)
+        // address(this) = contract의 주소
+        msg.sender.transfer(address(this).balance);
+    }
+}
+```
