@@ -321,3 +321,7 @@ contract CommitRevealLottery {
     }
 }
 ```
+
+## 6.4 Vote Contracts
+
+- 선거 운영 주체를 믿을 수 있나? => 탈중앙화된 투표시스템

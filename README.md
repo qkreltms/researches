@@ -6,10 +6,9 @@
 
 ## 정리 중:
 
-1. React 렌더링 원리 분석하기
-
 ## 하고 싶은 것:
 
+1. React 렌더링 원리 분석하기
 1. JS Design patterns
 1. Flux 구조 파악하기
 1. CI/CD tools
