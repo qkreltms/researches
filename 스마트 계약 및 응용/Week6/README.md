@@ -18,12 +18,12 @@ pragma solidity ^0.4.24;
 //         _; // 함수가 위치할 자리
 //     }
 //     // modifer 적용전
-//     // function destroy() pbulic {
+//     // function destroy() public {
 //     //     require(msg.sender == owner);
 //     //     selfdestruct(owner)
 //     // }
 //     // modifer 적용후
-//     function destroy() pbulic onlyOwner {
+//     function destroy() public onlyOwner {
 //         selfdestruct(owner)
 //     }
 
@@ -324,4 +324,147 @@ contract CommitRevealLottery {
 
 ## 6.4 Vote Contracts
 
-- 선거 운영 주체를 믿을 수 있나? => 탈중앙화된 투표시스템
+- 선거 운영 주체를 믿을 수 있나? or 외부의 공격 => 탈중앙화된 투표시스템
+
+- ![1](./6.4.1.png)
+- 우리가 만들 시스템 간단히 설명하면
+
+1. 유권자가 있고
+2. 이들을 등록하는 기능이 있어야 한다.
+3. 이들이 새로운 정책을 제안한다.
+4. 투표가 시작되면 각 유권자들은 자신이 지지하는 정책에 투표를 하게 된다.
+5. 투표가 끝나면 가장 많은 표를 얻은 정책이 채택된다.
+
+- ![1](./6.4.2.png)
+
+상태도에 따라 코딩 결과
+
+```
+pragma solidity >= 0.4.0 < 0.7.0;
+
+// 선거 상태
+enum WorkflowStatus {
+    RegisteringVoters,
+    ProposalsRegistrationStarted,
+    ProposalsRegistrationEnded,
+    VotingSessionStarted,
+    VotingSessionEnded,
+    VotesTallied
+}
+
+contract SimpleVote {
+    // Registering Voters는 RegisteringVoters 상태에서만 가능하다.
+    WorkflowStatus public workflowStatus = WorkflowStatus.RegisteringVoters;
+    uint winningProposalId;
+
+    modifier onlyDuringVotersRegistration() {
+        require(workflowStatus == WorkflowStatus.RegisteringVoters, "This function can be called only before proposals registration has started");
+        _;
+    }
+
+    modifier onlyDuringProposalsRegistration() {
+        require(workflowStatus == WorkflowStatus.ProposalsRegistrationStarted, "This function can be called only during proposals registration");
+        _;
+    }
+
+    modifier onlyAfterProposalsRegistration() {
+        require(workflowStatus == WorkflowStatus.ProposalsRegistrationEnded, "This function can be called only after proposals registration");
+        _;
+    }
+
+    modifier onlyDuringVotingSession() {
+        require(workflowStatus == WorkflowStatus.VotingSessionStarted, "This function can be called only during the voting session");
+        _;
+    }
+
+    modifier onlyAfterVotingSession() {
+        require(workflowStatus == WorkflowStatus.VotingSessionEnded, "This function can be called only after the voting session has ended");
+        _;
+    }
+
+    modifier onlyAfterVotesTallied() {
+        require(workflowStatus == WorkflowStatus.VotesTallied, "This function can be called only after votes have been tallied");
+        _;
+    }
+
+    address public administrator;
+    modifier onlyAdministrator() {
+        require(msg.sender == administrator, "The caller of this function must be the administrator");
+        _;
+    }
+
+    struct Voter {
+        bool isRegistered;
+        bool hasVoted;
+        uint votedProposalId;
+    }
+    mapping(address => Voter) public voters;
+    modifier onlyRegisterdVoter() {
+        require(voters[msg.sender].isRegistered, "The caller of this function must be a registered voter");
+        _;
+    }
+
+    // 상태변경
+    function startProposalsRegistration() public onlyAdministrator onlyDuringVotersRegistration {
+        workflowStatus = WorkflowStatus.ProposalsRegistrationStarted;
+    }
+
+    function startVotingSession() public onlyAdministrator onlyAfterProposalsRegistration {
+        workflowStatus = WorkflowStatus.VotingSessionStarted;
+    }
+
+    function endVotingSession() public onlyAdministrator onlyDuringVotingSession {
+        workflowStatus = WorkflowStatus.VotingSessionEnded;
+    }
+
+    function registerVoter(address _voterAddress) public onlyAdministrator onlyDuringVotersRegistration {
+        require(!voters[_voterAddress].isRegistered, "The voter is already registered");
+        voters[_voterAddress].isRegistered = true;
+        voters[_voterAddress].hasVoted = false;
+        voters[_voterAddress].votedProposalId = 0;
+    }
+
+    struct Proposal {
+        string description;
+        uint voteCount;
+    }
+
+    Proposal[] public proposals;
+    function registerProposal(string memory proposalDescription) public onlyRegisterdVoter onlyDuringProposalsRegistration {
+        proposals.push(Proposal({
+            description: proposalDescription,
+            voteCount: 0
+        }));
+    }
+
+    function vote(uint proposalId) public onlyRegisterdVoter onlyDuringVotingSession {
+        // 중복투표 막기
+        require(!voters[msg.sender].hasVoted, "The caller has already voted");
+
+        voters[msg.sender].hasVoted = true;
+        voters[msg.sender].votedProposalId = proposalId;
+
+        proposals[proposalId].voteCount += 1;
+    }
+
+    // 투표가 끝났는지 확인
+    function tallyVotes() public onlyAdministrator onlyAfterVotingSession {
+        uint winningVoteCount = 0;
+        uint winningProposalIndex = 0;
+
+        for (uint i =0; i<proposals.length; i++) {
+            if (proposals[i].voteCount > winningVoteCount) {
+                winningVoteCount = proposals[i].voteCount;
+                winningProposalIndex = i;
+            }
+        }
+
+        winningProposalId = winningProposalIndex;
+        workflowStatus = WorkflowStatus.VotesTallied;
+    }
+
+    constructor() public {
+        administrator = msg.sender;
+    }
+}
+```
