@@ -73,3 +73,36 @@ Wallet에는 fallback 메소드가 있다. 여기에서는 msg.data.length > 0�
 해커가 이 버그를 이용해서 이더를 훔쳐간 것과 동일한 방법으로 사용자들의 이더를 안전한 새로운 계정으로 옮겨주었다.
 
 하지만 몇 개월 후 다른 버그 때문에 이 라이브러리를 사용하던 151개의 어드레스가 영향을 받아 이들의 $152 밀리언 달러가 잠겨버리는 일이 발생됐다.한 사용자가 initWallet을 실행시켜서 wallet library의 owner가 되었고 별생각없이 suicide/selfdestruct 명령을 보냈다고 한다.
+
+## 7.2 Contract Security
+
+- 이더브리움/블록체인에 저장되는 모든 데이터는 모두 공개되어있다고 봐야한다.
+- 예를 들어 public, private는 다른 컨트랙트에서 읽을 수 있는지 없는지의 차이이지 블록체인 상에서 비공개라는 의미는 아니다.
+- 컨트렉트의 주소를 통해서 읽을 수 있다. (이더리움에서 문자열을 UTF-8로 저장)
+
+1. Sending Ether의 메소드에 의해서 발생하는 이슈
+   address.transfer(value) // throw an error if the transfer fails, 가장 안전한 방법
+   address.send(value) // return false if the transfer fails
+   address.call.value(value)() // gas를 지정하지 않으면 모두 보내기 때문에 위험
+
+```
+contract Fauccet {
+   function withdraw(uint withdraw_amount) public {
+      require(withdraw_amount <= 100000000000000);
+
+      msg.sender.transfer(withdraw_amount);
+   }
+
+   function () public payable {}
+}
+```
+
+위의 예제에서 받는 쪽의 address가 contract 어드레스라면 해당 contract의 fallback function을 부르게 된다.
+
+예를 들어서 faucet contract으로 이더를 보낸다면 faucet contract의 fallback 메소드가 불리게 된다.
+
+만약에 contract에 fallback 메소드가 없거나 fallback method가 payable이 아니라면 이에 지불하는 transfer 메소드는
+
+error exception을 내고 해당 메소드는 rollback되게 된다.
+
+이것이 악용될 수 있는데
