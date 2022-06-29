@@ -82,7 +82,7 @@ Wallet에는 fallback 메소드가 있다. 여기에서는 msg.data.length > 0�
 
 1. Sending Ether의 메소드에 의해서 발생하는 이슈
    address.transfer(value) // throw an error if the transfer fails, 가장 안전한 방법
-   address.send(value) // return false if the transfer fails
+   address.send(value) // return false if the transfer fails, 실패해도 계속 진행
    address.call.value(value)() // gas를 지정하지 않으면 모두 보내기 때문에 위험
 
 ```
@@ -105,4 +105,72 @@ contract Fauccet {
 
 error exception을 내고 해당 메소드는 rollback되게 된다.
 
-이것이 악용될 수 있는데
+이것이 악용될 수 있는데 바로 여러 개의 계좌에 이더를 지불하는 로직이 있을 때 어떤 계좌에도 이더가 안들어가게 하는 방법이다. 아래와 같은 이더를 분배하는 컨트랙트가 있다고 가정한다.
+
+```
+pragma solidity ^0.4.22;
+
+contract TrustFund {
+    address[3] partners;
+
+    // deploy시에 사용될 컨스트럭터
+    // 1.
+    // 가장 마지막 주소의 계좌에서 수수료가 빠져나간다.(?)
+    // ["0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2", "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db"]
+    constructor(address[3] _partners) public {
+        partners = _partners;
+    }
+
+    function updateAddress(uint partner, address newAddress) public {
+        require(msg.sender == partners[partner]);
+        partners[partner] = newAddress;
+    }
+
+    // 3. distribute버튼을 눌러 보낸 이더를 분배한다.
+    function distribute() public {
+        uint balance = address(this).balance; // 현재 컨트렉트의 balance;
+        partners[0].transfer(balance/2);
+        partners[1].transfer(balance/4);
+        partners[2].transfer(balance/4);
+    }
+
+    // 2.
+    // fallback을 통해서 이더를 전송할 수 있다.
+    // 20이더를 전송한다.
+    function () public payable {}
+}
+```
+
+만약 이러한 분배에 불만을가진 한 사람이 다음과 같은 컨트랙을 만들었다고 가정한다.
+
+```
+pragma solidity ^0.4.22;
+
+contract BadPartner {}
+```
+
+위의 컨택스트를 배포 한 후 updateAddress에 1, "0x9bF88fAe8CF8BaB76041c1db6467E7b37b977dD7"에 넣어서
+자신의 주소를 "폴백"이 없는 컨텍스트의 주소로 수정한다.
+
+그 후에 다시 distribute 버튼을 누르면 에러가 발생하고 자신의 어드레스가 포함된 분배는 모두 이더를 받지 못하게 된다.
+
+이를 방지하기 위해서는...
+
+transfer대신 실패해도 계속 진행되는 send 메소드를 사용한다., 단 send 메소드는 항상 return 값을 확인해야 하기 때문에 권장하는 방법은 아니다.
+
+withdraw 패턴을 사용하여 해결 가능하다.(추가적으로 transfer 메소드 호출 수가 줄었기 때문에 gas도 절약가능)
+
+- ![1](./7.2.1.png)
+
+```
+function withdraw(uint child) public {
+   require(msg.sender == partners[child]);
+   uint withdrawnSoFar = withdrawn[child];
+   uint allocation = totalFunding / distribution[child];
+
+   require(allocation > withdrawnSoFar);
+   uint amount = allocation - withdrawnSoFar;
+   withdrawn[child] = allocation;
+   msg.sender.transfer(amount);
+}
+```
