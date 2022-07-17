@@ -311,7 +311,7 @@ Open Zeppelin
 
 - To build secure smart contracts...
   - Secure programming practices and patterns (Withdraw, Checks-Effects-Interactions, ...)
-  - Automated vulnerability-discovery tools (Slither, Oyente)
-  - Formal verification of correctness (SMTChecker, VeriSol, Runtime Verification)
+  - Automated vulnerability-discovery tools (Slither, Oyente) - 버그가 있다는 것을 검증 가능
+  - Formal verification of correctness (SMTChecker, VeriSol, Runtime Verification) - 버그가 없다는 것을 검증 가능, 자동화 어렵다
   - 모델기반 설계(설계도를 그리면 자동으로 코드 생성)
 - ![1](./7.3.2.png)
