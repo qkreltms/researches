@@ -284,4 +284,25 @@ address(this).balance: Address 의 잔액(Wei 단위, 모든 거래의 금액(ms
 
 - ![1](./7.2.9.png)
 
-위와 비슷한 내용의 블로그 [참고](https://hackernoon.com/how-to-hack-smart-contracts-self-destruct-and-solidity)
+위와 비슷한 내용의 블로그
+
+[참고](https://hackernoon.com/how-to-hack-smart-contracts-self-destruct-and-solidity)
+
+## 7.3 검증 도구
+
+- 테스트 코드는 버그가 있다는 것은 보여주지만 버그가 없다는 것은 알려주지않음(다익스트라)
+
+### 스마트 컨트랙트 전문 감사 회사
+
+Open Zeppelin
+
+### 버그 및 보안 이슈 탐지 제품
+
+- Slither
+
+  - 솔리디티 스마트 컨트랙트 수학적 검증 및 취약성 탐지 제품
+  - 응용프로그램으로 스마트 컨트랙트를 타겟으로 정하면 취약점 & 소스코드 분석을 제공한다.
+
+- SMTChecker
+  - 컴파일러 기능으로 require, assert를 검증하고 반례를 제공한다.
+  - ![1](./7.3.1.png)
