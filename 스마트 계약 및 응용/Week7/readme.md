@@ -306,3 +306,12 @@ Open Zeppelin
 - SMTChecker
   - 컴파일러 기능으로 require, assert를 검증하고 반례를 제공한다.
   - ![1](./7.3.1.png)
+
+## 7.4. Designing Secure Smart Contracts
+
+- To build secure smart contracts...
+  - Secure programming practices and patterns (Withdraw, Checks-Effects-Interactions, ...)
+  - Automated vulnerability-discovery tools (Slither, Oyente)
+  - Formal verification of correctness (SMTChecker, VeriSol, Runtime Verification)
+  - 모델기반 설계(설계도를 그리면 자동으로 코드 생성)
+- ![1](./7.3.2.png)
