@@ -65,3 +65,34 @@ Type 3 = 크립터키티 프로토콜 위에서 새로운 protocol과 토큰을 
 
    자신의 컴퓨팅 자원을 빌려주고 토큰으로 보상받는다.
    Golem
+
+## 8.2 Interaction with the Contracts
+
+1. ethereum blockchain and smart contracts.
+2. whisper protocol: to communicate p2p and broadcast.
+3. swarm protocol: the decentralized file storage.
+
+블록체인을 활용한 학생정보 관리 시스템(with web3.js, 가나쉬(개인용 블록체인))
+
+- ![1](./8.2.png)
+
+```solidity
+pragma solidity >= 0.4.22 < 0.8.0;
+
+contract Student {
+    string firstName;
+    string lastName;
+    string dateOfBirth;
+
+// memory: 프로그램이 동작될 때만 임시적으로 기억, storage가 default. storage는 모든 컨트렉트에 있는 영역
+    function setStudent(string memory _firstName, string memory _lastName, string memory _dateOfBirth) public {
+        firstName = _firstName;
+        lastName = _lastName;
+        dateOfBirth = _dateOfBirth;
+    }
+
+    function getStudent() public view returns (string memory, string memory, string memory) {
+        return (firstName, lastName, dateOfBirth);
+    }
+}
+```
