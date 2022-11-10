@@ -1,0 +1,13 @@
+# pods02.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-pod2
+spec:
+  containers:
+    - name: hello-pod2
+      image: nginx:latest
+      ports:
+        - containerPort: 81
+    - name: webwatcher
+      image: afakharany/watcher:latest

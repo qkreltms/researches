@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: web
+  labels:
+    env: dev
+    roletest: web
+spec:
+  replicas: 3
+  selector:
+    # ReplicaSet의 label
+    matchLabels:
+      roletest: web
+  template: # 파드를 생성하기 위한 명세
+    metadata:
+      # Pod의 label
+      labels:
+        roletest: web
+    spec:
+      containers:
+        - name: testnginx
+          image: nginx
