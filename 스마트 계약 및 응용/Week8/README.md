@@ -123,3 +123,16 @@ contract Student {
     event Added (address indexed f, string firstName, string lastName, string dateOfBirth);
 }
 ```
+
+## 8.4 truffle
+
+프론트, solidity, ganache, 테스트 등 셋팅이 다 되어있는 프레임워크
+
+migrations 파일 하위에 위하는 JS 파일은 1*, 2* ... n\_ 와 같은 형식이 되어야함
+
+contract deploy는 truffle develop, migrate
+
+- ![1](./8.4.1.png)
+
+- 데이터를 컨트렉트에 적는 일 => transaction
+- 컨트렉트를 변경하지 않고 일기만 (gas 소모 되지 않음) => call
