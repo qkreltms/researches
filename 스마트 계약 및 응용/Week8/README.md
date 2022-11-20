@@ -136,3 +136,5 @@ contract deploy는 truffle develop, migrate
 
 - 데이터를 컨트렉트에 적는 일 => transaction
 - 컨트렉트를 변경하지 않고 일기만 (gas 소모 되지 않음) => call
+
+react + truffle 구현코드: 8.4-truffle 코드 참고
