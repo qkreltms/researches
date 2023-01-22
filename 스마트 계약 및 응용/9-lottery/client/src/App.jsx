@@ -1,14 +1,14 @@
 import { EthProvider } from "./contexts/EthContext";
 import "./App.css";
-import Main from './Main';
+import Main from "./Main";
 
 function App() {
   return (
-    <EthProvider>
-      <div id="App" >
-       <Main />
-      </div>
-    </EthProvider>
+    <div id="App">
+      <EthProvider>
+        <Main />
+      </EthProvider>
+    </div>
   );
 }
 
