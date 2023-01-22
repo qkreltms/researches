@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
 contract Lottery {
@@ -10,6 +11,7 @@ contract Lottery {
     }
 
     function enter() public payable {
+        // 얼마내고 참여가능한가?
         require(msg.value >= 0.1 ether);
         players.push(msg.sender);
     }
@@ -24,8 +26,8 @@ contract Lottery {
             );
     }
 
-    function pickWinnder() public {
-        require(msg.sender == manager); // 매너지만 당첨자 선정가능하도록
+    function pickWinner() public {
+        require(msg.sender == manager); // 매니저만 당첨자 선정가능하도록
         // 위너선정, 랜덤으로
         winner = payable(players[random() % players.length]);
         // 돈 보내기
