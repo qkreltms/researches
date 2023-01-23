@@ -1,0 +1,17 @@
+## 11.1 Tezos
+- 프로토콜을 변경시킬 수 있는 프로토콜
+- 비트코인이나 이더리움이 갖고있는 hard fork의 문제를 해결하기 위해 제시
+- PoS(proof of stake)
+- Smart contract(Turing complete)
+- 보안을 위해 함수형 언어인 OCaml로 구현됨
+- Contract 작성은 Michelson, LIGO 언어로 구현(스택 언어)
+  - 블록체인 안에서 타입체킹하는 inference engine을 실행하면 gas 비용이 늘기 때문에
+  - 컴파일단에서 간단한 타입 checking 시스템 구현
+  - storage에 타입 정의됨
+- Tezos의 가장 중요한 기능 중의 하나가 참여 거버넌스(네트워크)
+  - 4단계로 나뉜다.
+  - Proposal: 사람들이 proposal을 제출하고 다른 사람들은 이를 추천한다.
+  - Exploration Vote Period: 선거를 진행한다. 정족수를 만족하고 참여자의 80%가 동의하면 다음 단계로 넘어간다.
+  - Testing Period: 제안을 테스트 넷에서 실험한다.
+  - Promotion Vote Period: 80% 동의를 받으면 main net에 반영된다. 
+  - 스캔들 이슈
