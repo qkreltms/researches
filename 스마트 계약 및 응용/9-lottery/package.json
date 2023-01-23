@@ -1,0 +1,14 @@
+{
+  "name": "9-lottery",
+  "version": "1.0.0",
+  "description": "lottery.sol 1. compile 2. migrate --reset // 기존의 contract reset 후 배포",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.5"
+  }
+}
